@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Day Summary</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 18px; }
+    h1 { margin: 0 0 10px; }
+    .meta { margin: 0 0 16px; color: #444; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; font-size: 12px; }
+    th { background: #f3f3f3; text-align: left; }
+    .right { text-align: right; }
+    @media print {
+      button { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <button onclick="window.print()">Print</button>
+  <h1>Ups Queue Daily Summary</h1>
+  <div class="meta" id="meta"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Sales</th>
+        <th>Type</th>
+        <th>Model</th>
+        <th>Stock</th>
+        <th>Note</th>
+        <th class="right">Source</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script>
+    function fmtTime(ts){
+      return new Date(ts).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+    }
+
+    (async () => {
+      const res = await fetch("/api/admin/report/today", { credentials:"include" });
+      const data = await res.json();
+
+      const from = new Date(data.from).toLocaleDateString();
+      document.getElementById("meta").textContent = "Date: " + from + " | Total entries: " + (data.rows?.length || 0);
+
+      const tb = document.getElementById("rows");
+      tb.innerHTML = "";
+
+      (data.rows || []).forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${fmtTime(r.finished_at)}</td>
+          <td>${(r.name || "")}</td>
+          <td>${(r.client_type || "")}</td>
+          <td>${(r.model || "")}</td>
+          <td>${(r.stock || "")}</td>
+          <td>${(r.note || "")}</td>
+          <td class="right">${(r.source || "")}</td>
+        `;
+        tb.appendChild(tr);
+      });
+    })();
+  </script>
+</body>
+</html>

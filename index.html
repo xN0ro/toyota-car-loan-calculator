@@ -1,294 +1,259 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Toyota Gatineau</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ups Queue</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-
-  <!-- Language selector (translated by JS if you want, but label is handled by data-i18n) -->
-  <div class="field langField">
-    <label for="lang" data-i18n="ui_language">Language</label>
-    <select id="lang">
-      <option value="en">English</option>
-      <option value="fr">Français</option>
-    </select>
+  <div class="bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="gridNoise"></div>
   </div>
 
-  <div class="wrap">
-    <div class="topbar">
+  <main class="shell">
+    <!-- Login -->
+    <section class="card login" id="loginView">
       <div class="brand">
-        <img src="./logo.jpg" class="logoImg" alt="Toyota Gatineau">
+        <div class="mark"></div>
         <div>
-          <h1 data-i18n="ui_title">Loan Calculator</h1>
-        </div>
-      </div>
-      <div class="badge" data-i18n="ui_tax_included">Tax Included</div>
-    </div>
-
-    <!-- Vehicle section -->
-    <div class="sectionTitle">
-      <h2 data-i18n="sec_vehicle">Vehicle</h2><div class="sectionLine" aria-hidden="true"></div>
-    </div>
-
-    <div class="row">
-      <div class="field">
-        <label for="vin" data-i18n="label_vin">VIN</label>
-        <input id="vin" type="text" maxlength="17" placeholder="17 characters" data-i18n-placeholder="ph_vin" />
-        <div class="hint" id="vinStatus"></div>
-      </div>
-
-      <div class="field">
-        <label for="vehicleTitle" data-i18n="label_vehicleTitle">Vehicle (Year Make Model Trim)</label>
-        <input id="vehicleTitle" type="text" placeholder="Example: 2021 Toyota RAV4 XLE AWD" data-i18n-placeholder="ph_vehicleTitle" />
-      </div>
-
-      <div class="field">
-        <label for="stockNumber" data-i18n="label_stock">Stock#</label>
-        <input id="stockNumber" type="text" />
-      </div>
-    </div>
-
-    <div class="btnRow">
-      <button id="decodeVinBtn" type="button" data-i18n="btn_decode_vin">Decode VIN</button>
-    </div>
-
-    <div class="vehicleBanner" id="vehicleBanner">
-      <div class="vehicleBig" id="vehicleTitleOut" data-i18n="ui_vehicle_not_set">Vehicle not set</div>
-      <div class="vehicleSmall" id="vinOut"></div>
-    </div>
-
-    <div class="grid">
-      <!-- Left card (inputs) -->
-      <div class="card">
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_vehicle_province">Vehicle & Province</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="province" data-i18n="label_province">Province</label>
-            <select id="province">
-              <option value="QC" data-i18n="prov_qc">Quebec (14.975%)</option>
-              <option value="ON" data-i18n="prov_on">Ontario (13%)</option>
-              <option value="BC" data-i18n="prov_bc">British Columbia (12%)</option>
-              <option value="AB" data-i18n="prov_ab">Alberta (5%)</option>
-            </select>
-            <div class="hint" data-i18n="hint_on_550">Ontario adds $550 automatically.</div>
-          </div>
-
-          <div class="field">
-            <label for="price" data-i18n="label_price">Car price (before tax)</label>
-            <input id="price" type="number" min="0" step="0.01" value="25000" />
-          </div>
-        </div>
-
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_tradein">Trade-in</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="tradeIn" data-i18n="label_tradeIn">Trade-in value (entered)</label>
-            <input id="tradeIn" type="number" min="0" step="0.01" value="5000" />
-            <div class="hint" data-i18n="hint_trade_tax">Your rule: trade-in gets tax added on top.</div>
-          </div>
-
-          <div class="field">
-            <label for="payoff" data-i18n="label_payoff">Trade loan payoff</label>
-            <input id="payoff" type="number" min="0" step="0.01" value="0" />
-            <div class="hint" data-i18n="hint_payoff">Payoff is added to amount financed.</div>
-          </div>
-        </div>
-
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_loan">Loan</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="downPayment" data-i18n="label_downPayment">Down payment</label>
-            <input id="downPayment" type="number" min="0" step="0.01" value="0" />
-          </div>
-
-          <div class="field">
-            <label for="downPaymentNote" data-i18n="label_downPaymentNote">Down payment note (optional)</label>
-            <input id="downPaymentNote" type="text" placeholder="Example: Cash / Debit / Transfer" data-i18n-placeholder="ph_downNote" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="rate" data-i18n="label_rate">APR (interest %)</label>
-            <input id="rate" type="number" min="0" step="0.01" value="8.99" />
-          </div>
-
-          <div class="field">
-            <label for="term" data-i18n="label_term">Term (months)</label>
-            <select id="term">
-              <option value="12">12</option>
-              <option value="24">24</option>
-              <option value="36">36</option>
-              <option value="48">48</option>
-              <option value="60">60</option>
-              <option value="72" selected>72</option>
-              <option value="84">84</option>
-              <option value="96">96</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="paymentFreq" data-i18n="label_paymentFreq">Payment frequency</label>
-            <select id="paymentFreq">
-              <option value="monthly" data-i18n="freq_monthly">Monthly</option>
-              <option value="biweekly" data-i18n="freq_biweekly">Bi-weekly (26/yr)</option>
-              <option value="weekly" data-i18n="freq_weekly">Weekly (52/yr)</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="extraFees" data-i18n="label_extraFees">Other fees</label>
-            <input id="extraFees" type="number" min="0" step="0.01" value="0" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="includeSafetyFee" data-i18n="label_includeSafety">Ontario safety fee</label>
-            <select id="includeSafetyFee">
-              <option value="yes" data-i18n="opt_include">Include</option>
-              <option value="no" data-i18n="opt_no">No</option>
-            </select>
-            <div class="hint" data-i18n="hint_safety_edit">Auto-fills to $550 when Ontario is selected, but you can edit or remove it.</div>
-          </div>
-
-          <div class="field">
-            <label for="safetyFee" data-i18n="label_safety_amt">Safety fee amount</label>
-            <input id="safetyFee" type="number" min="0" step="0.01" value="550" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="discount" data-i18n="label_discount">Discount (before tax)</label>
-            <input id="discount" type="number" min="0" step="0.01" value="0" />
-            <div class="hint" data-i18n="hint_discount">This reduces the vehicle price before taxes.</div>
-          </div>
-
-          <div class="field">
-            <label for="discountNote" data-i18n="label_discountNote">Discount note (optional)</label>
-            <input id="discountNote" type="text" placeholder="Example: Promo, Manager discount" data-i18n-placeholder="ph_discountNote" />
-          </div>
-        </div>
-
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_addons">Add-ons</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="includeRust" data-i18n="label_rust">Rustproofing</label>
-            <select id="includeRust">
-              <option value="yes" data-i18n="opt_include">Include</option>
-              <option value="no" data-i18n="opt_no">No</option>
-            </select>
-            <div class="hint" data-i18n="hint_rust_default">Default is $1398</div>
-          </div>
-
-          <div class="field">
-            <label for="rustProofing" data-i18n="label_rust_price">Rustproofing price</label>
-            <input id="rustProofing" type="number" min="0" step="0.01" value="1398" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="warrantyType" data-i18n="label_warranty">Warranty 3y / 60,000 km</label>
-            <select id="warrantyType">
-              <option value="none" data-i18n="w_none">None</option>
-              <option value="fwd" data-i18n="w_fwd">FWD (suggested $2795)</option>
-              <option value="awd" data-i18n="w_awd">AWD (suggested $2995)</option>
-              <option value="other" data-i18n="w_other">Other (manual)</option>
-            </select>
-            <div class="hint" data-i18n="hint_warranty">Selecting FWD/AWD auto-fills the price, you can still change it.</div>
-          </div>
-
-          <div class="field">
-            <label for="warrantyPrice" data-i18n="label_warranty_price">Warranty price</label>
-            <input id="warrantyPrice" type="number" min="0" step="0.01" value="0" />
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="btnRow">
-          <button id="resetBtn" type="button" data-i18n="btn_reset">Reset example</button>
-          <button id="printBtn" type="button" data-i18n="btn_print">Print quote</button>
-          <button id="printCompareBtn" type="button" data-i18n="btn_print_compare">Print Comparison</button>
+          <h1>Ups Queue</h1>
+          <p>Login to control your turn. Server enforces fairness.</p>
         </div>
       </div>
 
-      <!-- Right card (results) -->
-      <div class="card">
-        <div class="resultsHeader">
-          <h2 data-i18n="sec_results">Results</h2>
-          <div class="chip" id="provinceChip">Province: QC</div>
-        </div>
+      <div class="fields">
+        <label>
+          Name
+          <input id="loginName" placeholder="Norayr" autocomplete="username" />
+        </label>
 
-        <div class="big" id="paymentOut">$0.00</div>
-        <div class="paymentLabel" id="paymentLabel" data-i18n="ui_payment_label">Monthly payment (tax included)</div>
-
-        <div class="chips">
-          <div class="chip" id="taxChip">Tax: 0%</div>
-          <div class="chip" id="feeChip">Fees: $0.00</div>
-        </div>
-
-        <ul class="list">
-          <li><span class="k" data-i18n="r_price">Car price (before tax)</span><span class="v" id="priceOut">$0.00</span></li>
-          <li><span class="k" data-i18n="r_price_tax">Car price (with tax)</span><span class="v" id="priceWithTaxOut">$0.00</span></li>
-          <li><span class="k" data-i18n="r_addons">Add-ons (before tax)</span><span class="v" id="addonsOut">$0.00</span></li>
-          <li><span class="k" data-i18n="r_addons_tax">Add-ons (with tax)</span><span class="v" id="addonsWithTaxOut">$0.00</span></li>
-          <li><span class="k" data-i18n="r_trade_tax">Trade-in (with tax added)</span><span class="v" id="tradeWithTaxOut">-$0.00</span></li>
-          <li><span class="k" data-i18n="r_payoff">Trade loan payoff</span><span class="v" id="payoffOut">+$0.00</span></li>
-          <li><span class="k" data-i18n="r_fees">Total fees</span><span class="v" id="feesOut">+$0.00</span></li>
-          <li><span class="k"><b data-i18n="r_amount_financed">Amount financed</b></span><span class="v" id="amountFinancedOut"><b>$0.00</b></span></li>
-          <li><span class="k" data-i18n="r_total_paid">Total of payments</span><span class="v" id="totalPaidOut">$0.00</span></li>
-          <li><span class="k" data-i18n="r_interest">Total interest</span><span class="v" id="interestOut">$0.00</span></li>
-        </ul>
-
-        <div class="warn" data-i18n="ui_note_rules">
-          Note: This uses your custom rules (trade-in tax added, Ontario $550, add-ons taxed).
-        </div>
-
-        <div class="footer" data-i18n="ui_values_cad">All values CAD.</div>
+        <label>
+          Password / PIN
+          <input id="loginPass" type="password" placeholder="1111" autocomplete="current-password" />
+        </label>
       </div>
-    </div>
-  </div>
 
-  <div id="printArea"></div>
+      <button class="btn primary" id="loginBtn" type="button">Login</button>
+      <div class="error" id="loginError"></div>
 
-  <script src="script.js"></script>
+      <div class="tip">
+        Accounts can be created by the manager (or in <code>seed.js</code>).
+      </div>
+    </section>
 
-  <!-- Tiny helper for placeholders translation -->
-  <script>
-    // This supports data-i18n-placeholder so placeholders translate too.
-    // Your main script already defines applyLanguageToUI(), we extend it safely.
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof t === "function") {
-        const original = window.applyLanguageToUI;
-        window.applyLanguageToUI = function () {
-          if (typeof original === "function") original();
-          document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
-            const key = node.getAttribute("data-i18n-placeholder");
-            if (key) node.setAttribute("placeholder", t(key));
-          });
-        };
-      }
-    });
-  </script>
+    <!-- App -->
+    <section class="app" id="appView" hidden>
+      <header class="topbar">
+        <div class="left">
+          <div class="title">
+            <h2>Ups Queue</h2>
+            <span class="chip" id="roleChip">sales</span>
+          </div>
+          <div class="sub" id="meLine">Logged in</div>
+        </div>
+
+        <div class="right">
+          <button class="btn ghost" id="refreshBtn" type="button">Refresh</button>
+          <button class="btn ghost" id="logoutBtn" type="button">Logout</button>
+        </div>
+      </header>
+
+      <section class="grid">
+        <!-- Controls -->
+        <article class="card">
+          <div class="head">
+            <h3>My controls</h3>
+            <span class="pill" id="queueCount">0</span>
+          </div>
+
+          <label class="small">
+            Note (optional)
+            <input id="note" maxlength="60" placeholder="Walk-in / Phone / Appointment / Stock #" />
+          </label>
+
+          <div class="row">
+            <button class="btn primary" id="joinBtn" type="button">Join queue</button>
+            <button class="btn ghost" id="leaveBtn" type="button">Leave queue</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="current">
+            <div class="head2">
+              <h3>In progress</h3>
+              <span class="chip muted" id="liveChip">Idle</span>
+            </div>
+
+            <div class="currentCard" id="currentCard">
+              <div class="big" id="currentName">None</div>
+              <div class="muted" id="currentMeta">No up in progress</div>
+            </div>
+
+            <div class="row">
+              <button class="btn success" id="takeBtn" type="button">Take next up</button>
+              <button class="btn" id="finishBtn" type="button">Finish</button>
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <input id="finishModel" placeholder="Model (ex: RAV4 XLE)" style="flex:1; min-width:180px;" />
+              <input id="finishStock" placeholder="Stock #" style="flex:1; min-width:140px;" />
+            </div>
+
+            <!-- Sales: Request button (ONLY ONE) -->
+            <button id="requestTakeBtn" class="btn" type="button" style="margin-top:10px;">
+              Request take next up
+            </button>
+
+            <div class="hint" id="ruleHint"></div>
+          </div>
+
+          <!-- Manager only -->
+          <div class="managerBox" id="managerBox" hidden>
+            <div class="divider"></div>
+
+            <h3 style="margin:0 0 10px;">Manager: Day Summary</h3>
+            <div class="row" style="gap:10px;">
+              <button class="btn ghost" id="printBtn" type="button">Print summary</button>
+            </div>
+
+            <!-- Manager: Take Requests -->
+            <div class="card" style="margin-top:12px;">
+              <div class="head2" style="margin-bottom:10px;">
+                <h3 style="margin:0;">Take Requests</h3>
+                <span class="pill" id="takeRequestsCount">0</span>
+              </div>
+              <div id="takeRequestsEmpty" class="empty" style="margin-top:0;">No pending requests</div>
+              <div id="takeRequestsList" class="list"></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 style="margin:0 0 10px;">Manager: Add manual entry</h3>
+
+            <div class="row" style="gap:10px; flex-wrap:wrap;">
+              <label class="small" style="flex:1; min-width:160px;">
+                Salesperson
+                <select id="manualUser"></select>
+              </label>
+
+              <label class="small" style="flex:1; min-width:160px;">
+                Type
+                <select id="manualType">
+                  <option value="rdv">rdv</option>
+                  <option value="up">up</option>
+                  <option value="bebacks">bebacks</option>
+                </select>
+              </label>
+
+              <label class="small" style="flex:1; min-width:160px;">
+                Time
+                <input id="manualTime" type="time" step="60" />
+              </label>
+
+              <label class="small" style="flex:1; min-width:160px;">
+                Model (optional)
+                <input id="manualModel" maxlength="40" placeholder="RAV4" />
+              </label>
+
+              <label class="small" style="flex:1; min-width:160px;">
+                Stock (optional)
+                <input id="manualStock" maxlength="40" placeholder="P12345" />
+              </label>
+            </div>
+
+            <label class="small" style="display:block; margin-top:10px;">
+              Note (optional)
+              <input id="manualNote" maxlength="120" placeholder="Appointment name, phone, trade, etc" />
+            </label>
+
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" id="manualAddBtn" type="button" style="width:100%;">Add entry</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 style="margin:0 0 10px;">Manager: Users</h3>
+
+            <div class="row" style="gap:10px; flex-wrap:wrap;">
+              <label class="small" style="flex:1; min-width:160px;">
+                Name
+                <input id="newUserName" maxlength="25" placeholder="Kevin" />
+              </label>
+
+              <label class="small" style="flex:1; min-width:160px;">
+                PIN (4-8 digits)
+                <input id="newUserPin" maxlength="8" placeholder="5555" />
+              </label>
+
+              <label class="small" style="flex:1; min-width:160px;">
+                Role
+                <select id="newUserRole">
+                  <option value="sales">sales</option>
+                  <option value="manager">manager</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" id="createUserBtn" type="button" style="width:100%;">Create user</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="head" style="margin-bottom:10px;">
+              <h3 style="margin:0;">Users list</h3>
+              <button class="btn ghost" id="refreshUsersBtn" type="button">Refresh</button>
+            </div>
+
+            <div id="usersList" class="totals"></div>
+
+            <div class="divider"></div>
+            <button class="btn danger" id="resetBtn" type="button">Manager: Reset day</button>
+          </div>
+        </article>
+
+        <!-- Queue -->
+        <article class="card">
+          <div class="head">
+            <h3>Queue</h3>
+            <span class="chip muted">Live</span>
+          </div>
+
+          <ul class="list" id="queueList"></ul>
+          <div class="empty" id="queueEmpty">Queue is empty</div>
+        </article>
+
+        <!-- Totals -->
+        <article class="card">
+          <div class="head">
+            <h3>Today totals</h3>
+            <span class="chip muted">Auto</span>
+          </div>
+
+          <div class="totals" id="totals"></div>
+        </article>
+
+        <!-- History -->
+        <article class="card full">
+          <div class="head">
+            <h3>History</h3>
+            <span class="pill" id="historyCount">0</span>
+          </div>
+
+          <ul class="list" id="historyList"></ul>
+          <div class="empty" id="historyEmpty">No history yet</div>
+        </article>
+      </section>
+
+      <div class="toast" id="toast"></div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
