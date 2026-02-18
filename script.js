@@ -1,28 +1,19 @@
 /* =========================================================
    Toyota Gatineau Loan Calculator (script.js)
 
-   Keep everything like before:
-   - Full detailed print sheet (Pricing / Trade-in / Fees / Financing)
-   - Full comparison sheet (3 columns) with Fees + Amount Financed + Payment
-   - VIN decode, warranty auto-fill, i18n EN/FR, etc.
+   Fixes requested:
+   1) Comparison sheet: make option columns feel bigger (more padding, bigger checkbox)
+      while keeping 1 page landscape.
+   2) Manual add-on UI: align name + price inputs properly (same row, same top alignment).
 
-   NEW (your requests):
-   1) Ontario safety fee:
-      - Input shows 549.95 (before tax)
-      - In the calculation, it is financed as (549.95 + tax)
-      - On BOTH sheets, it displays 549.95 (no tax shown on that line)
-   2) Comparison options order:
-      - Option 1: Rust only
-      - Option 2: Warranty only
-      - Option 3: Rust + Warranty
-   3) Comparison sheet is landscape
-   4) Add-ons list on BOTH sheets:
-      - Under “car price before taxes” area, list included add-ons (names only)
-      - One per line (stacked)
-      - No prices in that list
-      - Keep the “Add-ons (before tax)” total row like before
-   5) Clean add-on system + TAG system (695 + tax). Easy to add more later.
-
+   Keeps:
+   - VIN decode
+   - i18n EN/FR
+   - Warranty autofill
+   - Ontario safety fee shown before tax, financed with tax
+   - Comparison shows: car price before tax, add-ons list with price, ON safety fee, trade-in,
+     payoff, down payment, and payment (tax included)
+   - Other fees removed from website and calculations
    ========================================================= */
 
 /* ---------------------------
@@ -30,7 +21,6 @@
 --------------------------- */
 const I18N = {
   en: {
-    // UI
     ui_language: "Language",
     ui_title: "Loan Calculator",
     ui_tax_included: "Tax Included",
@@ -40,7 +30,6 @@ const I18N = {
       "Note: Trade-in has tax added. Ontario safety fee is financed with tax added (but displayed before tax). Add-ons are taxed by province.",
     ui_values_cad: "All values CAD.",
 
-    // Sections
     sec_vehicle: "Vehicle",
     sec_vehicle_province: "Vehicle & Province",
     sec_tradein: "Trade-in",
@@ -48,7 +37,6 @@ const I18N = {
     sec_addons: "Add-ons",
     sec_results: "Results",
 
-    // Labels
     label_vin: "VIN",
     label_vehicleTitle: "Vehicle (Year Make Model Trim)",
     label_stock: "Stock#",
@@ -76,34 +64,35 @@ const I18N = {
     label_warranty: "Warranty 3y / 60,000 km",
     label_warranty_price: "Warranty price",
 
-    // Placeholders
+    // Manual add-on
+    label_custom_addon: "Manual add-on",
+    label_custom_addon_name: "Add-on name",
+    label_custom_addon_price: "Add-on price",
+    hint_custom_addon: "Enter a name and a price (tax will be added by province).",
+
     ph_vin: "17 characters",
     ph_vehicleTitle: "Example: 2021 Toyota RAV4 XLE AWD",
     ph_downNote: "Example: Cash / Debit / Transfer",
     ph_discountNote: "Example: Promo, Manager discount",
+    ph_custom_addon_name: "Example: Winter tires",
 
-    // Province options
     prov_qc: "Quebec (14.975%)",
     prov_on: "Ontario (13%)",
     prov_bc: "British Columbia (12%)",
     prov_ab: "Alberta (5%)",
 
-    // Payment frequency
     freq_monthly: "Monthly",
     freq_biweekly: "Bi-weekly (26/yr)",
     freq_weekly: "Weekly (52/yr)",
 
-    // Common options
     opt_include: "Include",
     opt_no: "No",
 
-    // Warranty options
     w_none: "None",
     w_fwd: "FWD (suggested $2795)",
     w_awd: "AWD (suggested $2995)",
     w_other: "Other (manual)",
 
-    // Hints
     hint_on_550: "Ontario enables safety fee automatically.",
     hint_trade_tax: "Your rule: trade-in gets tax added on top.",
     hint_payoff: "Payoff is added to amount financed.",
@@ -114,13 +103,11 @@ const I18N = {
     hint_tag_default: "Default is $695 (plus tax)",
     hint_warranty: "Selecting FWD/AWD auto-fills the price, you can still change it.",
 
-    // Buttons
     btn_decode_vin: "Decode VIN",
     btn_reset: "Reset example",
     btn_print: "Print quote",
     btn_print_compare: "Print Comparison",
 
-    // Results list
     r_price: "Car price (before tax)",
     r_price_tax: "Car price (with tax)",
     r_addons: "Add-ons (before tax)",
@@ -136,7 +123,6 @@ const I18N = {
     chip_tax: "Tax",
     chip_fees: "Fees",
 
-    // Print common
     dealer: "Toyota Gatineau",
     generated: "Generated",
     vehicle: "Vehicle",
@@ -147,7 +133,6 @@ const I18N = {
     apr: "APR",
     term: "Term",
 
-    // Detailed print
     detailed_title: "Vehicle Finance Quote",
     pricing: "Pricing",
     trade: "Trade-in",
@@ -165,7 +150,6 @@ const I18N = {
     trade_entered: "Trade-in entered",
     trade_with_tax_added: "Trade-in (with tax added)",
     payoff_added: "Payoff added",
-    other_fees: "Other fees",
     ont_safety: "Ontario safety fee",
     total_fees: "Total fees",
     amount_financed: "Amount financed",
@@ -178,20 +162,16 @@ const I18N = {
     pay_biweekly: "Bi-weekly payment (tax included)",
     pay_weekly: "Weekly payment (tax included)",
 
-    // Comparison print
     opt1: "SILVER",
     opt2: "GOLD",
     opt3: "PLATINUM",
-    cmp_car_before: "Car price (before add-ons & tax)",
-    cmp_total_tax_addons: "Total with tax + add-ons",
+    cmp_car_before: "Car price (before tax)",
     client_choice: "Client choice (X)",
 
-    // Add-on names
     addon_rust: "Rustproofing",
     addon_tag: "TAG system",
     addon_warranty: "Warranty",
 
-    // VIN status
     vin_need_17: "VIN must be 17 characters.",
     vin_decoding: "Decoding VIN...",
     vin_ok: "VIN decoded successfully.",
@@ -200,7 +180,6 @@ const I18N = {
   },
 
   fr: {
-    // UI
     ui_language: "Langue",
     ui_title: "Calculatrice de financement",
     ui_tax_included: "Taxes incluses",
@@ -210,7 +189,6 @@ const I18N = {
       "Note: Taxes ajoutées sur l’échange. Les frais d’inspection Ontario sont financés avec taxes ajoutées (affichés avant taxes). Les options sont taxées selon la province.",
     ui_values_cad: "Tous les montants en $ CAD.",
 
-    // Sections
     sec_vehicle: "Véhicule",
     sec_vehicle_province: "Véhicule et province",
     sec_tradein: "Échange",
@@ -218,7 +196,6 @@ const I18N = {
     sec_addons: "Options",
     sec_results: "Résultats",
 
-    // Labels
     label_vin: "NIV",
     label_vehicleTitle: "Véhicule (année marque modèle version)",
     label_stock: "Stock#",
@@ -246,34 +223,35 @@ const I18N = {
     label_warranty: "Garantie 3 ans / 60 000 km",
     label_warranty_price: "Prix garantie",
 
-    // Placeholders
+    // Manual add-on
+    label_custom_addon: "Option manuelle",
+    label_custom_addon_name: "Nom de l’option",
+    label_custom_addon_price: "Prix de l’option",
+    hint_custom_addon: "Entrez un nom et un prix (taxes ajoutées selon la province).",
+
     ph_vin: "17 caractères",
     ph_vehicleTitle: "Exemple: 2021 Toyota RAV4 XLE AWD",
     ph_downNote: "Exemple: Argent / Débit / Virement",
     ph_discountNote: "Exemple: Promo, rabais gestionnaire",
+    ph_custom_addon_name: "Exemple: Pneus d’hiver",
 
-    // Province options
     prov_qc: "Québec (14,975%)",
     prov_on: "Ontario (13%)",
     prov_bc: "Colombie-Britannique (12%)",
     prov_ab: "Alberta (5%)",
 
-    // Payment frequency
     freq_monthly: "Mensuel",
     freq_biweekly: "Aux 2 semaines (26/an)",
     freq_weekly: "Hebdomadaire (52/an)",
 
-    // Common options
     opt_include: "Inclure",
     opt_no: "Non",
 
-    // Warranty options
     w_none: "Aucune",
     w_fwd: "FWD (suggéré 2795$)",
     w_awd: "AWD (suggéré 2995$)",
     w_other: "Autre (manuel)",
 
-    // Hints
     hint_on_550: "En Ontario, les frais d’inspection s’activent automatiquement.",
     hint_trade_tax: "Votre règle: taxes ajoutées sur l’échange.",
     hint_payoff: "Le solde à payer est ajouté au montant financé.",
@@ -284,13 +262,11 @@ const I18N = {
     hint_tag_default: "Par défaut: 695$ (plus taxes)",
     hint_warranty: "FWD/AWD remplit automatiquement le prix, vous pouvez modifier.",
 
-    // Buttons
     btn_decode_vin: "Décoder le NIV",
     btn_reset: "Réinitialiser l’exemple",
     btn_print: "Imprimer la soumission",
     btn_print_compare: "Imprimer comparatif",
 
-    // Results list
     r_price: "Prix du véhicule (avant taxes)",
     r_price_tax: "Prix (avec taxes)",
     r_addons: "Options (avant taxes)",
@@ -306,7 +282,6 @@ const I18N = {
     chip_tax: "Taxes",
     chip_fees: "Frais",
 
-    // Print common
     dealer: "Toyota Gatineau",
     generated: "Généré",
     vehicle: "Véhicule",
@@ -317,7 +292,6 @@ const I18N = {
     apr: "Taux",
     term: "Terme",
 
-    // Detailed print
     detailed_title: "Soumission de financement",
     pricing: "Prix",
     trade: "Échange",
@@ -335,7 +309,6 @@ const I18N = {
     trade_entered: "Échange saisi",
     trade_with_tax_added: "Échange (taxes ajoutées)",
     payoff_added: "Solde à payer ajouté",
-    other_fees: "Autres frais",
     ont_safety: "Frais d’inspection Ontario",
     total_fees: "Total des frais",
     amount_financed: "Montant financé",
@@ -348,20 +321,16 @@ const I18N = {
     pay_biweekly: "Paiement aux 2 semaines (taxes incluses)",
     pay_weekly: "Paiement hebdomadaire (taxes incluses)",
 
-    // Comparison print
     opt1: "ARGENT",
     opt2: "OR",
     opt3: "PLATINE",
-    cmp_car_before: "Prix (avant options et taxes)",
-    cmp_total_tax_addons: "Total (taxes + options)",
+    cmp_car_before: "Prix du véhicule (avant taxes)",
     client_choice: "Choix du client (X)",
 
-    // Add-on names
     addon_rust: "Antirouille",
     addon_tag: "Système TAG",
     addon_warranty: "Garantie",
 
-    // VIN status
     vin_need_17: "Le NIV doit contenir 17 caractères.",
     vin_decoding: "Décodage du NIV...",
     vin_ok: "NIV décodé avec succès.",
@@ -430,50 +399,39 @@ const WARRANTY_DEFAULTS = {
   other: 0
 };
 
-// Ontario safety fee base shown in input and on sheets (NO tax shown there)
 const ON_SAFETY_BASE = 549.95;
 
-// Clean add-on config (easy to add more)
 const ADDONS = [
-  {
-    key: "rust",
-    labelKey: "addon_rust",
-    includeId: "includeRust",
-    priceId: "rustProofing",
-    defaultPrice: 1398
-  },
-  {
-    key: "tag",
-    labelKey: "addon_tag",
-    includeId: "includeTag",
-    priceId: "tagPrice",
-    defaultPrice: 695
-  }
-  // warranty is special (type + price)
+  { key: "rust", labelKey: "addon_rust", includeId: "includeRust", priceId: "rustProofing", defaultPrice: 1398 },
+  { key: "tag", labelKey: "addon_tag", includeId: "includeTag", priceId: "tagPrice", defaultPrice: 695 }
 ];
+
+// Manual add-on IDs created by JS
+const CUSTOM_ADDON = {
+  nameId: "customAddonName",
+  priceId: "customAddonPrice",
+  wrapId: "customAddonWrap"
+};
 
 /* ---------------------------
    Language apply
 --------------------------- */
 function applyLanguageToUI() {
-  // Translate text nodes
   document.querySelectorAll("[data-i18n]").forEach((node) => {
     const key = node.getAttribute("data-i18n");
     if (!key) return;
     node.textContent = t(key);
   });
 
-  // Translate placeholders
   document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
     const key = node.getAttribute("data-i18n-placeholder");
     if (!key) return;
     node.setAttribute("placeholder", t(key));
   });
 
-  // TAG section (in case you did not put data-i18n on those)
+  // TAG labels (if not in HTML)
   const tagLabel = document.querySelector('label[for="includeTag"]');
   if (tagLabel) tagLabel.textContent = t("label_tag");
-
   const tagPriceLabel = document.querySelector('label[for="tagPrice"]');
   if (tagPriceLabel) tagPriceLabel.textContent = t("label_tag_price");
 
@@ -484,9 +442,27 @@ function applyLanguageToUI() {
     tagSel.options[1].textContent = t("opt_include");
     tagSel.value = cur;
   }
-
   const tagHint = tagSel?.closest(".field")?.querySelector(".hint");
   if (tagHint) tagHint.textContent = t("hint_tag_default");
+
+  // Manual add-on translations
+  const wrap = el(CUSTOM_ADDON.wrapId);
+  if (wrap) {
+    const title = wrap.querySelector("[data-custom-title]");
+    if (title) title.textContent = t("label_custom_addon");
+
+    const nameLabel = wrap.querySelector('label[for="' + CUSTOM_ADDON.nameId + '"]');
+    if (nameLabel) nameLabel.textContent = t("label_custom_addon_name");
+
+    const priceLabel = wrap.querySelector('label[for="' + CUSTOM_ADDON.priceId + '"]');
+    if (priceLabel) priceLabel.textContent = t("label_custom_addon_price");
+
+    const nameInput = el(CUSTOM_ADDON.nameId);
+    if (nameInput) nameInput.setAttribute("placeholder", t("ph_custom_addon_name"));
+
+    const hint = wrap.querySelector(".hint");
+    if (hint) hint.textContent = t("hint_custom_addon");
+  }
 
   updateVehicleDisplay();
   recompute();
@@ -501,7 +477,7 @@ function setLanguage(lang) {
 }
 
 /* ---------------------------
-   VIN decode (NHTSA)
+   VIN decode
 --------------------------- */
 function cleanVin(raw) {
   return (raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -579,7 +555,7 @@ async function decodeVin() {
 }
 
 /* ---------------------------
-   Warranty auto-fill
+   Warranty autofill
 --------------------------- */
 let warrantyAutoFillEnabled = true;
 
@@ -601,11 +577,7 @@ function syncSafetyFeeWithProvince() {
   if (provinceKey === "ON") {
     includeNode.value = "yes";
     const cur = clampNumber(feeNode.value);
-
-    // Force to 549.95 if it was 0 or old 550-ish
-    if (cur === 0 || Math.abs(cur - 550) < 0.2) {
-      feeNode.value = ON_SAFETY_BASE;
-    }
+    if (cur === 0 || Math.abs(cur - 550) < 0.2) feeNode.value = ON_SAFETY_BASE;
   } else {
     includeNode.value = "no";
     feeNode.value = 0;
@@ -613,10 +585,70 @@ function syncSafetyFeeWithProvince() {
 }
 
 /* ---------------------------
-   Add-ons (clean system)
+   Remove Other Fees UI
+--------------------------- */
+function hideOtherFeesUI() {
+  const n = el("extraFees");
+  if (!n) return;
+
+  const field = n.closest(".field");
+  if (field) field.style.display = "none";
+
+  // If the whole row becomes empty or awkward, hide the row as well
+  const row = n.closest(".row");
+  if (row) {
+    const visibleFields = Array.from(row.querySelectorAll(".field")).filter((f) => f.style.display !== "none");
+    if (visibleFields.length === 0) row.style.display = "none";
+  }
+}
+
+/* ---------------------------
+   Manual add-on UI (aligned)
+--------------------------- */
+function ensureCustomAddonUI() {
+  if (el(CUSTOM_ADDON.wrapId)) return;
+
+  const warrantyPriceInput = el("warrantyPrice");
+  const anchorRow = warrantyPriceInput?.closest(".row") || el("warrantyType")?.closest(".row");
+  const parent = anchorRow?.parentElement;
+  if (!parent) return;
+
+  // Build a clean aligned row: both fields have same structure (label -> input)
+  const wrap = document.createElement("div");
+  wrap.id = CUSTOM_ADDON.wrapId;
+
+  // Do NOT use class="row" on wrapper, to avoid nesting issues.
+  wrap.innerHTML = `
+    <div style="margin-top:10px; font-weight:800;" data-custom-title>${escapeHtml(t("label_custom_addon"))}</div>
+    <div class="row" style="align-items:flex-start;">
+      <div class="field" style="flex:1;">
+        <label for="${CUSTOM_ADDON.nameId}">${escapeHtml(t("label_custom_addon_name"))}</label>
+        <input id="${CUSTOM_ADDON.nameId}" type="text" placeholder="${escapeHtml(t("ph_custom_addon_name"))}" />
+        <div class="hint" style="margin-top:6px;">${escapeHtml(t("hint_custom_addon"))}</div>
+      </div>
+
+      <div class="field" style="max-width:240px;">
+        <label for="${CUSTOM_ADDON.priceId}">${escapeHtml(t("label_custom_addon_price"))}</label>
+        <input id="${CUSTOM_ADDON.priceId}" type="number" min="0" step="0.01" value="0" />
+        <div class="hint" style="visibility:hidden; margin-top:6px;">.</div>
+      </div>
+    </div>
+  `;
+
+  parent.insertBefore(wrap, anchorRow.nextSibling);
+}
+
+function getCustomAddonItem() {
+  const name = (el(CUSTOM_ADDON.nameId)?.value || "").trim();
+  const price = clampNumber(el(CUSTOM_ADDON.priceId)?.value);
+  if (!name || price <= 0) return null;
+  return { key: "custom", label: name, price };
+}
+
+/* ---------------------------
+   Add-ons logic
 --------------------------- */
 function getAddonsForScenario({ useRust = null, useWarranty = null } = {}) {
-  // Rust + TAG from config
   const items = [];
 
   for (const a of ADDONS) {
@@ -624,20 +656,11 @@ function getAddonsForScenario({ useRust = null, useWarranty = null } = {}) {
     const price = clampNumber(el(a.priceId)?.value);
 
     let include = includeUI;
-
-    // Only rust is scenario-controlled
     if (a.key === "rust" && useRust !== null) include = !!useRust;
 
-    if (include && price > 0) {
-      items.push({
-        key: a.key,
-        label: t(a.labelKey),
-        price
-      });
-    }
+    if (include && price > 0) items.push({ key: a.key, label: t(a.labelKey), price });
   }
 
-  // Warranty is special (scenario-controlled)
   const warrantyPrice = clampNumber(el("warrantyPrice")?.value);
   const warrantyType = el("warrantyType")?.value || "none";
   const warrantyUIIncluded = warrantyType !== "none" && warrantyPrice > 0;
@@ -646,38 +669,45 @@ function getAddonsForScenario({ useRust = null, useWarranty = null } = {}) {
   if (useWarranty !== null) includeWarranty = !!useWarranty;
 
   if (includeWarranty && warrantyPrice > 0) {
-    items.push({
-      key: "warranty",
-      label: t("addon_warranty"),
-      price: warrantyPrice
-    });
+    items.push({ key: "warranty", label: t("addon_warranty"), price: warrantyPrice });
   }
+
+  const custom = getCustomAddonItem();
+  if (custom) items.push(custom);
 
   const totalBeforeTax = items.reduce((s, x) => s + (x.price || 0), 0);
   return { items, totalBeforeTax };
 }
 
-function buildAddonListHtml(items, maxLines = 0) {
+function buildAddonListNamesOnlyHtml(items) {
   const names = (items || []).map((x) => escapeHtml(x.label));
-
   const lines = names.length ? names : [escapeHtml(t("addon_none"))];
-
-  // Pad with invisible lines to keep columns aligned (comparison sheet)
-  if (maxLines > 0) {
-    while (lines.length < maxLines) lines.push(`<span style="visibility:hidden">.</span>`);
-  }
-
-  const lineHtml = lines
-    .map(
-      (name) =>
-        `<div style="margin:2px 0; font-size:12px; line-height:1.15;">${name}</div>`
-    )
-    .join("");
 
   return `
     <div style="margin-top:6px;">
       <div style="font-weight:700; margin-bottom:4px;">${escapeHtml(t("addons_included"))}</div>
-      ${lineHtml}
+      ${lines.map((name) => `<div style="margin:2px 0; font-size:12px; line-height:1.12;">${name}</div>`).join("")}
+    </div>
+  `;
+}
+
+function buildAddonListWithPricesHtml(items, minLines = 0) {
+  const rows = (items || []).map((x) => ({ name: escapeHtml(x.label), price: fmt(clampNumber(x.price)) }));
+  if (!rows.length) rows.push({ name: escapeHtml(t("addon_none")), price: "" });
+  while (rows.length < minLines) rows.push({ name: `<span style="visibility:hidden">.</span>`, price: "" });
+
+  return `
+    <div style="margin-top:6px;">
+      <div style="font-weight:800; font-size:12px; margin-bottom:6px;">${escapeHtml(t("addons_included"))}</div>
+      ${rows
+        .map(
+          (r) => `
+            <div class="cmpRow" style="gap:10px; padding:3px 0;">
+              <span style="font-size:12px; line-height:1.1;">${r.name}</span>
+              <b style="font-size:12px; line-height:1.1;">${escapeHtml(r.price)}</b>
+            </div>`
+        )
+        .join("")}
     </div>
   `;
 }
@@ -696,7 +726,6 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
   const rules = PROVINCES[provinceKey] || PROVINCES.QC;
   const taxRate = rules.taxRate;
 
-  // Inputs
   const price = clampNumber(el("price")?.value);
   const tradeInEntered = clampNumber(el("tradeIn")?.value);
   const payoff = clampNumber(el("payoff")?.value);
@@ -705,40 +734,33 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
   const apr = clampNumber(el("rate")?.value);
   const termMonths = Math.max(1, Math.floor(clampNumber(el("term")?.value)));
 
-  // Discount (before tax)
   const discount = clampNumber(el("discount")?.value);
   const discountedPrice = Math.max(0, price - discount);
 
-  // Add-ons
   const addons = getAddonsForScenario({ useRust, useWarranty });
   const addonsBeforeTax = addons.totalBeforeTax;
   const addonsWithTax = addonsBeforeTax * (1 + taxRate);
 
-  // Vehicle total with tax + add-ons
   const baseWithTax = discountedPrice * (1 + taxRate);
   const priceWithTax = baseWithTax + addonsWithTax;
 
-  // Trade-in with tax added on top (your rule)
   const tradeInWithTax = tradeInEntered * (1 + taxRate);
 
-  // Fees
-  const extraFees = clampNumber(el("extraFees")?.value);
+  // Other fees removed
+  const extraFees = 0;
 
   const includeSafety = (el("includeSafetyFee")?.value || "no") === "yes";
   const safetyFeeBase = includeSafety ? clampNumber(el("safetyFee")?.value) : 0;
 
-  // IMPORTANT:
-  // safety fee is FINANCED with tax added, but displayed as base on sheet
+  // Financed with tax, displayed before tax
   const safetyFeeFinanced = safetyFeeBase * (1 + taxRate);
 
   const totalFeesDisplay = extraFees + safetyFeeBase;
   const totalFeesFinanced = extraFees + safetyFeeFinanced;
 
-  // Amount financed
   let amountFinanced = priceWithTax - tradeInWithTax + payoff + totalFeesFinanced - downPayment;
   if (amountFinanced < 0) amountFinanced = 0;
 
-  // Payment frequency
   const freq = el("paymentFreq")?.value || "monthly";
   const pm = getPaymentMeta(termMonths, freq);
 
@@ -754,11 +776,9 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
     vehicleTitle: (el("vehicleTitle")?.value || "").trim(),
     stockNumber: (el("stockNumber")?.value || "").trim(),
 
-    // Notes (kept like before)
     discountNote: (el("discountNote")?.value || "").trim(),
     downPaymentNote: (el("downPaymentNote")?.value || "").trim(),
 
-    // Pricing
     price,
     discount,
     discountedPrice,
@@ -767,18 +787,13 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
     addonsWithTax,
     priceWithTax,
 
-    // Trade-in
     tradeInEntered,
     tradeInWithTax,
     payoff,
 
-    // Fees
-    extraFees,
     safetyFeeBase,
-    safetyFeeFinanced,
     totalFeesDisplay,
 
-    // Financing
     downPayment,
     apr,
     termMonths,
@@ -791,7 +806,7 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
 }
 
 /* ---------------------------
-   Recompute UI outputs
+   Recompute outputs
 --------------------------- */
 function recompute() {
   const s = computeTotals();
@@ -821,8 +836,9 @@ function recompute() {
 }
 
 /* ---------------------------
-   Print mode (avoid blank page + set orientation)
+   Print mode (landscape)
 --------------------------- */
+// 1) REPLACE your whole setPrintMode() with this version
 function setPrintMode(orientation) {
   const id = "tg_print_style";
   let style = document.getElementById(id);
@@ -834,11 +850,14 @@ function setPrintMode(orientation) {
 
   const pageSize = orientation === "landscape" ? "landscape" : "portrait";
 
+  // Smaller margins in landscape so the comparison fills the page more
+  const margin = orientation === "landscape" ? "4mm" : "8mm";
+
   style.textContent = `
     #printArea { display: none; }
 
     @media print {
-      @page { size: ${pageSize}; margin: 10mm; }
+      @page { size: ${pageSize}; margin: ${margin}; }
 
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       body > *:not(#printArea) { display: none !important; }
@@ -847,14 +866,21 @@ function setPrintMode(orientation) {
       #printArea .printPage,
       #printArea .cmpPage { page-break-after: avoid !important; break-after: avoid !important; }
 
-      /* Prevent stray extra page */
       #printArea { height: auto !important; overflow: visible !important; }
+
+      /* Make comparison page bigger but still 1 page */
+      #printArea { font-size: 13px !important; }
+      .cmpGrid { gap: 12px !important; }
+      .cmpCol { padding: 18px !important; }
+      .cmpColTitle { font-size: 17px !important; }
+      .cmpPickBox { width: 28px !important; height: 28px !important; border-width: 2px !important; }
     }
   `;
 }
 
+
 /* ---------------------------
-   Detailed print HTML (like before + add-on list)
+   Detailed print
 --------------------------- */
 function buildPrintHtml(summary) {
   const locale = LANG === "fr" ? "fr-CA" : "en-CA";
@@ -872,8 +898,6 @@ function buildPrintHtml(summary) {
           ${summary.stockNumber ? `<div class="printSub">${escapeHtml(t("stock"))}: ${escapeHtml(summary.stockNumber)}</div>` : ""}
 
           <div class="printSub">${escapeHtml(t("province"))}: ${escapeHtml(summary.provinceKey)}</div>
-          ${summary.discountNote ? `<div class="printSub">Discount note: ${escapeHtml(summary.discountNote)}</div>` : ""}
-          ${summary.downPaymentNote ? `<div class="printSub">Down payment note: ${escapeHtml(summary.downPaymentNote)}</div>` : ""}
         </div>
 
         <div style="text-align:right">
@@ -891,10 +915,8 @@ function buildPrintHtml(summary) {
           <div class="printRow"><span>${escapeHtml(t("discount_before_tax"))}</span><b>-${fmt(summary.discount)}</b></div>
           <div class="printRow"><span>${escapeHtml(t("price_after_discount"))}</span><b>${fmt(summary.discountedPrice)}</b></div>
 
-          <!-- NEW: add-ons list (names only, stacked) -->
-          ${buildAddonListHtml(summary.addonsItems, 0)}
+          ${buildAddonListNamesOnlyHtml(summary.addonsItems)}
 
-          <!-- Keep totals like before -->
           <div class="printRow"><span>${escapeHtml(t("addons_before_tax"))}</span><b>${fmt(summary.addonsBeforeTax)}</b></div>
           <div class="printRow"><span>${escapeHtml(t("addons_with_tax"))}</span><b>${fmt(summary.addonsWithTax)}</b></div>
           <div class="printRow"><span>${escapeHtml(t("car_price_with_tax_addons"))}</span><b>${fmt(summary.priceWithTax)}</b></div>
@@ -910,15 +932,11 @@ function buildPrintHtml(summary) {
 
         <div class="printBox">
           <h3>${escapeHtml(t("fees"))}</h3>
-          
-
-          <!-- Ontario safety fee displayed BEFORE tax -->
           ${
             summary.provinceKey === "ON" && summary.safetyFeeBase > 0
               ? `<div class="printRow"><span>${escapeHtml(t("ont_safety"))}</span><b>${fmt(summary.safetyFeeBase)}</b></div>`
               : ""
           }
-
           <div class="printRow"><span>${escapeHtml(t("total_fees"))}</span><b>${fmt(summary.totalFeesDisplay)}</b></div>
         </div>
 
@@ -954,11 +972,7 @@ function printQuote() {
 }
 
 /* ---------------------------
-   Comparison print HTML (like before + add-on list + landscape)
-   Order:
-   1) Rust only
-   2) Warranty only
-   3) Rust + Warranty
+   Comparison print (bigger columns, still 1 page)
 --------------------------- */
 function buildComparisonPrintHtml(s1, s2, s3) {
   const locale = LANG === "fr" ? "fr-CA" : "en-CA";
@@ -967,50 +981,58 @@ function buildComparisonPrintHtml(s1, s2, s3) {
   const taxPct = nicePct(s1.taxRate);
   const showSafetyRow = s1.provinceKey === "ON" && s1.safetyFeeBase > 0;
 
-  // Determine max lines for addon list to keep alignment
-  // (Rust, TAG, Warranty) => max 3 lines usually
-  const maxLines = 3;
+  const maxAddonLines = Math.max(s1.addonsItems.length, s2.addonsItems.length, s3.addonsItems.length, 1);
 
-  function col(label, s) {
-    return `
-      <div class="cmpCol">
-        <div class="cmpColTitle">${escapeHtml(label)}</div>
+  // 2) INSIDE buildComparisonPrintHtml(), replace ONLY the row() and col() helpers with these:
 
-        <div class="cmpRow"><span>${escapeHtml(t("cmp_car_before"))}</span><b>${fmt(s.discountedPrice)}</b></div>
+function row(label, value) {
+  return `
+    <div class="cmpRow" style="padding:5px 0;">
+      <span style="font-size:13px; line-height:1.12;">${escapeHtml(label)}</span>
+      <b style="font-size:13px; line-height:1.12;">${escapeHtml(value)}</b>
+    </div>
+  `;
+}
 
-        <!-- NEW: add-ons list (names only, stacked). Padded to keep alignment -->
-        ${buildAddonListHtml(s.addonsItems, maxLines)}
+function col(title, s) {
+  return `
+    <div class="cmpCol" style="padding:18px; display:flex; flex-direction:column;">
+      <div class="cmpColTitle" style="font-size:17px;">${escapeHtml(title)}</div>
 
-        <!-- Keep totals like before -->
-        <div class="cmpRow"><span>${escapeHtml(t("addons_before_tax"))}</span><b>${fmt(s.addonsBeforeTax)}</b></div>
-        <div class="cmpRow"><span>${escapeHtml(t("cmp_total_tax_addons"))}</span><b>${fmt(s.priceWithTax)}</b></div>
+      <div style="flex:1;">
+        ${row(t("cmp_car_before"), fmt(s.discountedPrice))}
+        ${buildAddonListWithPricesHtml(s.addonsItems, maxAddonLines)}
 
-        <div class="cmpDivider"></div>
+        <div class="cmpDivider" style="margin:7px 0;"></div>
 
-        
-        ${showSafetyRow ? `<div class="cmpRow"><span>${escapeHtml(t("ont_safety"))}</span><b>${fmt(s.safetyFeeBase)}</b></div>` : ""}
-        <div class="cmpRow"><span>${escapeHtml(t("total_fees"))}</span><b>${fmt(s.totalFeesDisplay)}</b></div>
+        ${showSafetyRow ? row(t("ont_safety"), fmt(s.safetyFeeBase)) : ""}
+        ${row(t("trade_with_tax_added"), "-" + fmt(s.tradeInWithTax))}
+        ${row(t("payoff_added"), "+" + fmt(s.payoff))}
+        ${row(t("down_payment"), "-" + fmt(s.downPayment))}
 
-        <!-- Trade & down payment shown on the sheet (same for all options) -->
-        <div class="cmpRow"><span>${escapeHtml(t("trade_with_tax_added"))}</span><b>${fmt(s.tradeInWithTax)}</b></div>
-        <div class="cmpRow"><span>${escapeHtml(t("down_payment"))}</span><b>-${fmt(s.downPayment)}</b></div>
+        <div class="cmpDivider" style="margin:7px 0;"></div>
 
-        <div class="cmpDivider"></div>
-
-        <div class="cmpRow"><span>${escapeHtml(t("amount_financed"))}</span><b>${fmt(s.amountFinanced)}</b></div>
-        <div class="cmpRow big"><span>${escapeHtml(t(s.paymentLabelKey))}</span><b>${fmt(s.payment)}</b></div>
-
-        <div class="cmpPick">
-          <div class="cmpPickBox"></div>
-          <div class="cmpPickText">${escapeHtml(t("client_choice"))}</div>
+        <div class="cmpRow big" style="align-items:flex-end; padding:7px 0;">
+          <span style="font-size:13px; line-height:1.12;">
+            ${escapeHtml(t(s.paymentLabelKey))}
+            <div style="font-size:12px; opacity:0.7; margin-top:2px;">${escapeHtml(t("ui_tax_included"))}</div>
+          </span>
+          <b style="font-size:20px; line-height:1;">${escapeHtml(fmt(s.payment))}</b>
         </div>
       </div>
-    `;
-  }
+
+      <div class="cmpPick" style="margin-top:8px;">
+        <div class="cmpPickBox" style="width:28px; height:28px; border:2px solid #000;"></div>
+        <div class="cmpPickText">${escapeHtml(t("client_choice"))}</div>
+      </div>
+    </div>
+  `;
+}
+
 
   return `
     <div class="cmpPage">
-      <div class="cmpHeader">
+      <div class="cmpHeader" style="margin-bottom:6px;">
         <div class="cmpBrand">
           <img class="cmpLogo" src="./logo.jpg" alt="${escapeHtml(t("dealer"))}">
           <div>
@@ -1031,7 +1053,7 @@ function buildComparisonPrintHtml(s1, s2, s3) {
         </div>
       </div>
 
-      <div class="cmpGrid">
+      <div class="cmpGrid" style="gap:10px;">
         ${col(t("opt1"), s1)}
         ${col(t("opt2"), s2)}
         ${col(t("opt3"), s3)}
@@ -1041,10 +1063,6 @@ function buildComparisonPrintHtml(s1, s2, s3) {
 }
 
 function printComparisonQuote() {
-  // Order requested:
-  // 1 rust only
-  // 2 warranty only
-  // 3 both
   const option1 = computeTotals({ useRust: true, useWarranty: false });
   const option2 = computeTotals({ useRust: false, useWarranty: true });
   const option3 = computeTotals({ useRust: true, useWarranty: true });
@@ -1077,7 +1095,6 @@ function bindInputs() {
     "downPayment",
     "rate",
     "term",
-    "extraFees",
     "paymentFreq",
     "discount",
     "includeSafetyFee",
@@ -1092,7 +1109,9 @@ function bindInputs() {
     "includeTag",
     "tagPrice",
     "warrantyType",
-    "warrantyPrice"
+    "warrantyPrice",
+    CUSTOM_ADDON.nameId,
+    CUSTOM_ADDON.priceId
   ];
 
   ids.forEach((id) => {
@@ -1102,13 +1121,9 @@ function bindInputs() {
     node.addEventListener("change", recompute);
   });
 
-  // Language
   const langSel = el("lang");
-  if (langSel) {
-    langSel.addEventListener("change", () => setLanguage(langSel.value));
-  }
+  if (langSel) langSel.addEventListener("change", () => setLanguage(langSel.value));
 
-  // Province change
   const prov = el("province");
   if (prov) {
     prov.addEventListener("change", () => {
@@ -1117,7 +1132,6 @@ function bindInputs() {
     });
   }
 
-  // Warranty type auto-fill
   const wt = el("warrantyType");
   if (wt) {
     wt.addEventListener("change", () => {
@@ -1135,18 +1149,15 @@ function bindInputs() {
     });
   }
 
-  // VIN decode
   const vinBtn = el("decodeVinBtn");
   if (vinBtn) vinBtn.addEventListener("click", decodeVin);
 
-  // Print
   const pb = el("printBtn");
   if (pb) pb.addEventListener("click", printQuote);
 
   const pcb = el("printCompareBtn");
   if (pcb) pcb.addEventListener("click", printComparisonQuote);
 
-  // Reset
   const rb = el("resetBtn");
   if (rb) {
     rb.addEventListener("click", () => {
@@ -1158,35 +1169,31 @@ function bindInputs() {
 
       if (el("rate")) el("rate").value = 8.99;
       if (el("term")) el("term").value = "72";
-
       if (el("paymentFreq")) el("paymentFreq").value = "monthly";
-      if (el("extraFees")) el("extraFees").value = 0;
 
       if (el("discount")) el("discount").value = 0;
       if (el("discountNote")) el("discountNote").value = "";
       if (el("downPaymentNote")) el("downPaymentNote").value = "";
 
-      // Add-ons
       if (el("includeRust")) el("includeRust").value = "yes";
       if (el("rustProofing")) el("rustProofing").value = 1398;
 
       if (el("includeTag")) el("includeTag").value = "no";
       if (el("tagPrice")) el("tagPrice").value = 695;
 
-      // VIN + vehicle
+      if (el(CUSTOM_ADDON.nameId)) el(CUSTOM_ADDON.nameId).value = "";
+      if (el(CUSTOM_ADDON.priceId)) el(CUSTOM_ADDON.priceId).value = 0;
+
       if (el("vin")) el("vin").value = "";
       if (el("vehicleTitle")) el("vehicleTitle").value = "";
       if (el("stockNumber")) el("stockNumber").value = "";
       setVinStatus("");
 
-      // Warranty
       if (el("warrantyType")) el("warrantyType").value = "none";
       warrantyAutoFillEnabled = true;
       updateWarrantyPriceFromType();
 
-      // Safety fee
       syncSafetyFeeWithProvince();
-
       updateVehicleDisplay();
       recompute();
     });
@@ -1197,7 +1204,6 @@ function bindInputs() {
    Init
 --------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  // Load saved language
   try {
     const saved = localStorage.getItem("tg_lang");
     if (saved === "fr" || saved === "en") LANG = saved;
@@ -1205,22 +1211,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (el("lang")) el("lang").value = LANG;
 
-  // Set default add-on prices if empty
+  ensureCustomAddonUI();
+  hideOtherFeesUI();
+
+  // Default add-on prices if empty
   for (const a of ADDONS) {
     const priceNode = el(a.priceId);
     if (priceNode && clampNumber(priceNode.value) === 0) priceNode.value = a.defaultPrice;
   }
 
-  // Warranty default
   updateWarrantyPriceFromType();
-
-  // Ontario safety fee behavior (force 549.95 for ON, otherwise 0)
   syncSafetyFeeWithProvince();
 
-  // Apply translations + placeholders
   applyLanguageToUI();
-
-  // Bind and compute
   bindInputs();
   updateVehicleDisplay();
   recompute();
