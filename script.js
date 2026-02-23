@@ -1,19 +1,5 @@
 /* =========================================================
    Toyota Gatineau Loan Calculator (script.js)
-
-   Fixes requested:
-   1) Comparison sheet: make option columns feel bigger (more padding, bigger checkbox)
-      while keeping 1 page landscape.
-   2) Manual add-on UI: align name + price inputs properly (same row, same top alignment).
-
-   Keeps:
-   - VIN decode
-   - i18n EN/FR
-   - Warranty autofill
-   - Ontario safety fee shown before tax, financed with tax
-   - Comparison shows: car price before tax, add-ons list with price, ON safety fee, trade-in,
-     payoff, down payment, and payment (tax included)
-   - Other fees removed from website and calculations
    ========================================================= */
 
 /* ---------------------------
@@ -26,9 +12,14 @@ const I18N = {
     ui_tax_included: "Tax Included",
     ui_vehicle_not_set: "Vehicle not set",
     ui_payment_label: "Monthly payment (tax included)",
-    ui_note_rules:
-      "Note: Trade-in has tax added. Ontario safety fee is financed with tax added (but displayed before tax). Add-ons are taxed by province.",
+    ui_note_rules: "Note: Trade-in has tax added. Ontario safety fee is financed with tax added. Add-ons are taxed by province.",
     ui_values_cad: "All values CAD.",
+
+    sec_purchase_type: "Purchase Type",
+    label_purchaseType: "Type",
+    opt_finance: "Finance",
+    opt_cash: "Cash Deal",
+    pay_cash: "Total Cash Price (tax included)",
 
     sec_vehicle: "Vehicle",
     sec_vehicle_province: "Vehicle & Province",
@@ -64,7 +55,6 @@ const I18N = {
     label_warranty: "Warranty 3y / 60,000 km",
     label_warranty_price: "Warranty price",
 
-    // Manual add-on
     label_custom_addon: "Manual add-on",
     label_custom_addon_name: "Add-on name",
     label_custom_addon_price: "Add-on price",
@@ -96,8 +86,7 @@ const I18N = {
     hint_on_550: "Ontario enables safety fee automatically.",
     hint_trade_tax: "Your rule: trade-in gets tax added on top.",
     hint_payoff: "Payoff is added to amount financed.",
-    hint_safety_edit:
-      "Auto-fills to $549.95 when Ontario is selected (displayed before tax). It is financed with tax added.",
+    hint_safety_edit: "Auto-fills to $549.95 when Ontario is selected (displayed before tax). It is financed with tax added.",
     hint_discount: "This reduces the vehicle price before taxes.",
     hint_rust_default: "Default is $1398",
     hint_tag_default: "Default is $695 (plus tax)",
@@ -115,7 +104,7 @@ const I18N = {
     r_trade_tax: "Trade-in (with tax added)",
     r_payoff: "Trade loan payoff",
     r_fees: "Total fees",
-    r_amount_financed: "Amount financed",
+    r_amount_financed: "Amount financed / Balance",
     r_total_paid: "Total of payments",
     r_interest: "Total interest",
 
@@ -152,11 +141,10 @@ const I18N = {
     payoff_added: "Payoff added",
     ont_safety: "Ontario safety fee",
     total_fees: "Total fees",
-    amount_financed: "Amount financed",
+    amount_financed: "Amount financed / Balance",
     total_payments: "Total of payments",
     total_interest: "Total interest",
-    note_tradein_tax:
-      "Notes: Trade-in has tax added. Ontario safety fee is financed with tax added (but displayed before tax). Add-ons are taxed by province.",
+    note_tradein_tax: "Notes: Trade-in has tax added. Ontario safety fee is financed with tax added (but displayed before tax). Add-ons are taxed by province.",
 
     pay_monthly: "Monthly payment (tax included)",
     pay_biweekly: "Bi-weekly payment (tax included)",
@@ -185,9 +173,14 @@ const I18N = {
     ui_tax_included: "Taxes incluses",
     ui_vehicle_not_set: "Véhicule non défini",
     ui_payment_label: "Paiement mensuel (taxes incluses)",
-    ui_note_rules:
-      "Note: Taxes ajoutées sur l’échange. Les frais d’inspection Ontario sont financés avec taxes ajoutées (affichés avant taxes). Les options sont taxées selon la province.",
+    ui_note_rules: "Note: Taxes ajoutées sur l’échange. Les frais d’inspection Ontario sont financés avec taxes ajoutées. Options taxées selon la province.",
     ui_values_cad: "Tous les montants en $ CAD.",
+
+    sec_purchase_type: "Type d'achat",
+    label_purchaseType: "Type",
+    opt_finance: "Financement",
+    opt_cash: "Achat comptant",
+    pay_cash: "Prix total comptant (taxes incluses)",
 
     sec_vehicle: "Véhicule",
     sec_vehicle_province: "Véhicule et province",
@@ -223,7 +216,6 @@ const I18N = {
     label_warranty: "Garantie 3 ans / 60 000 km",
     label_warranty_price: "Prix garantie",
 
-    // Manual add-on
     label_custom_addon: "Option manuelle",
     label_custom_addon_name: "Nom de l’option",
     label_custom_addon_price: "Prix de l’option",
@@ -255,8 +247,7 @@ const I18N = {
     hint_on_550: "En Ontario, les frais d’inspection s’activent automatiquement.",
     hint_trade_tax: "Votre règle: taxes ajoutées sur l’échange.",
     hint_payoff: "Le solde à payer est ajouté au montant financé.",
-    hint_safety_edit:
-      "Auto-remplit à 549,95$ en Ontario (affiché avant taxes). Financé avec taxes ajoutées.",
+    hint_safety_edit: "Auto-remplit à 549,95$ en Ontario (affiché avant taxes). Financé avec taxes ajoutées.",
     hint_discount: "Réduit le prix du véhicule avant taxes.",
     hint_rust_default: "Par défaut: 1398$",
     hint_tag_default: "Par défaut: 695$ (plus taxes)",
@@ -274,7 +265,7 @@ const I18N = {
     r_trade_tax: "Échange (taxes ajoutées)",
     r_payoff: "Solde à payer (échange)",
     r_fees: "Total des frais",
-    r_amount_financed: "Montant financé",
+    r_amount_financed: "Montant financé / Solde",
     r_total_paid: "Total des paiements",
     r_interest: "Intérêts totaux",
 
@@ -311,11 +302,10 @@ const I18N = {
     payoff_added: "Solde à payer ajouté",
     ont_safety: "Frais d’inspection Ontario",
     total_fees: "Total des frais",
-    amount_financed: "Montant financé",
+    amount_financed: "Montant financé / Solde",
     total_payments: "Total des paiements",
     total_interest: "Intérêts totaux",
-    note_tradein_tax:
-      "Notes: Taxes ajoutées sur l’échange. Frais Ontario financés avec taxes ajoutées (affichés avant taxes). Options taxées selon la province.",
+    note_tradein_tax: "Notes: Taxes ajoutées sur l’échange. Frais Ontario financés avec taxes ajoutées. Options taxées selon la province.",
 
     pay_monthly: "Paiement mensuel (taxes incluses)",
     pay_biweekly: "Paiement aux 2 semaines (taxes incluses)",
@@ -406,7 +396,6 @@ const ADDONS = [
   { key: "tag", labelKey: "addon_tag", includeId: "includeTag", priceId: "tagPrice", defaultPrice: 695 }
 ];
 
-// Manual add-on IDs created by JS
 const CUSTOM_ADDON = {
   nameId: "customAddonName",
   priceId: "customAddonPrice",
@@ -429,7 +418,6 @@ function applyLanguageToUI() {
     node.setAttribute("placeholder", t(key));
   });
 
-  // TAG labels (if not in HTML)
   const tagLabel = document.querySelector('label[for="includeTag"]');
   if (tagLabel) tagLabel.textContent = t("label_tag");
   const tagPriceLabel = document.querySelector('label[for="tagPrice"]');
@@ -445,21 +433,16 @@ function applyLanguageToUI() {
   const tagHint = tagSel?.closest(".field")?.querySelector(".hint");
   if (tagHint) tagHint.textContent = t("hint_tag_default");
 
-  // Manual add-on translations
   const wrap = el(CUSTOM_ADDON.wrapId);
   if (wrap) {
     const title = wrap.querySelector("[data-custom-title]");
     if (title) title.textContent = t("label_custom_addon");
-
     const nameLabel = wrap.querySelector('label[for="' + CUSTOM_ADDON.nameId + '"]');
     if (nameLabel) nameLabel.textContent = t("label_custom_addon_name");
-
     const priceLabel = wrap.querySelector('label[for="' + CUSTOM_ADDON.priceId + '"]');
     if (priceLabel) priceLabel.textContent = t("label_custom_addon_price");
-
     const nameInput = el(CUSTOM_ADDON.nameId);
     if (nameInput) nameInput.setAttribute("placeholder", t("ph_custom_addon_name"));
-
     const hint = wrap.querySelector(".hint");
     if (hint) hint.textContent = t("hint_custom_addon");
   }
@@ -474,6 +457,18 @@ function setLanguage(lang) {
     localStorage.setItem("tg_lang", LANG);
   } catch (_) {}
   applyLanguageToUI();
+}
+
+/* ---------------------------
+   Purchase Type Toggle
+--------------------------- */
+function togglePurchaseType() {
+  const type = el("purchaseType")?.value || "finance";
+  const wrap = el("financeFieldsWrap");
+  if (wrap) {
+    wrap.style.display = type === "cash" ? "none" : "block";
+  }
+  recompute();
 }
 
 /* ---------------------------
@@ -536,10 +531,7 @@ async function decodeVin() {
     }
 
     const extras = [trim, series].filter(Boolean).join(" ").trim();
-    const title = [year, make, model, extras || body]
-      .filter(Boolean)
-      .join(" ")
-      .replace(/\s+/g, " ");
+    const title = [year, make, model, extras || body].filter(Boolean).join(" ").replace(/\s+/g, " ");
 
     if (el("vehicleTitle")) el("vehicleTitle").value = title;
 
@@ -584,17 +576,11 @@ function syncSafetyFeeWithProvince() {
   }
 }
 
-/* ---------------------------
-   Remove Other Fees UI
---------------------------- */
 function hideOtherFeesUI() {
   const n = el("extraFees");
   if (!n) return;
-
   const field = n.closest(".field");
   if (field) field.style.display = "none";
-
-  // If the whole row becomes empty or awkward, hide the row as well
   const row = n.closest(".row");
   if (row) {
     const visibleFields = Array.from(row.querySelectorAll(".field")).filter((f) => f.style.display !== "none");
@@ -613,11 +599,8 @@ function ensureCustomAddonUI() {
   const parent = anchorRow?.parentElement;
   if (!parent) return;
 
-  // Build a clean aligned row: both fields have same structure (label -> input)
   const wrap = document.createElement("div");
   wrap.id = CUSTOM_ADDON.wrapId;
-
-  // Do NOT use class="row" on wrapper, to avoid nesting issues.
   wrap.innerHTML = `
     <div style="margin-top:10px; font-weight:800;" data-custom-title>${escapeHtml(t("label_custom_addon"))}</div>
     <div class="row" style="align-items:flex-start;">
@@ -626,7 +609,6 @@ function ensureCustomAddonUI() {
         <input id="${CUSTOM_ADDON.nameId}" type="text" placeholder="${escapeHtml(t("ph_custom_addon_name"))}" />
         <div class="hint" style="margin-top:6px;">${escapeHtml(t("hint_custom_addon"))}</div>
       </div>
-
       <div class="field" style="max-width:240px;">
         <label for="${CUSTOM_ADDON.priceId}">${escapeHtml(t("label_custom_addon_price"))}</label>
         <input id="${CUSTOM_ADDON.priceId}" type="number" min="0" step="0.01" value="0" />
@@ -634,7 +616,6 @@ function ensureCustomAddonUI() {
       </div>
     </div>
   `;
-
   parent.insertBefore(wrap, anchorRow.nextSibling);
 }
 
@@ -654,10 +635,8 @@ function getAddonsForScenario({ useRust = null, useWarranty = null } = {}) {
   for (const a of ADDONS) {
     const includeUI = (el(a.includeId)?.value || "no") === "yes";
     const price = clampNumber(el(a.priceId)?.value);
-
     let include = includeUI;
     if (a.key === "rust" && useRust !== null) include = !!useRust;
-
     if (include && price > 0) items.push({ key: a.key, label: t(a.labelKey), price });
   }
 
@@ -691,23 +670,104 @@ function buildAddonListNamesOnlyHtml(items) {
   `;
 }
 
+/* ---------------------------
+   Print mode
+--------------------------- */
+function setPrintMode(orientation) {
+  const id = "tg_print_style";
+  let style = document.getElementById(id);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    document.head.appendChild(style);
+  }
+
+  const isLand = orientation === "landscape";
+  
+  style.textContent = `
+    #printArea { display: none; }
+    @media print {
+      @page { size: ${isLand ? "landscape" : "portrait"}; margin: 8mm; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fff !important; color: #000 !important; }
+      body > *:not(#printArea) { display: none !important; }
+      #printArea { display: block !important; position: static !important; width: 100% !important; }
+      
+      * { box-sizing: border-box !important; }
+
+      ${isLand ? `
+      /* Locks the landscape sheet to exactly 1 page */
+      .cmpPage { height: 95vh; display: flex; flex-direction: column; overflow: hidden; page-break-inside: avoid; }
+      .cmpGrid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; margin-top: 10px; }
+      
+      /* Updated Header to allow a massive logo */
+      .cmpHeader { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 15px; }
+      .cmpBrand { display: flex; gap: 20px; align-items: center; }
+      .cmpLogo { height: 110px !important; width: auto !important; max-width: 300px !important; object-fit: contain; display: block; }
+      ` : ``}
+    }
+  `;
+}
+
+function row(label, value) {
+  return `
+    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #888; font-size:13px;">
+      <span>${escapeHtml(label)}</span>
+      <b style="white-space:nowrap;">${escapeHtml(value)}</b>
+    </div>
+  `;
+}
+
 function buildAddonListWithPricesHtml(items, minLines = 0) {
-  const rows = (items || []).map((x) => ({ name: escapeHtml(x.label), price: fmt(clampNumber(x.price)) }));
-  if (!rows.length) rows.push({ name: escapeHtml(t("addon_none")), price: "" });
-  while (rows.length < minLines) rows.push({ name: `<span style="visibility:hidden">.</span>`, price: "" });
+  const rows = (items || []).map((x) => ({ name: escapeHtml(x.label) }));
+  if (!rows.length) rows.push({ name: escapeHtml(t("addon_none")) });
+  while (rows.length < minLines) rows.push({ name: `<span style="visibility:hidden">.</span>` });
 
   return `
-    <div style="margin-top:6px;">
+    <div style="margin: 12px 0;">
       <div style="font-weight:800; font-size:12px; margin-bottom:6px;">${escapeHtml(t("addons_included"))}</div>
-      ${rows
-        .map(
-          (r) => `
-            <div class="cmpRow" style="gap:10px; padding:3px 0;">
-              <span style="font-size:12px; line-height:1.1;">${r.name}</span>
-              <b style="font-size:12px; line-height:1.1;">${escapeHtml(r.price)}</b>
-            </div>`
-        )
-        .join("")}
+      ${rows.map((r) => `
+        <div style="padding: 3px 0; font-size:13px; font-weight:700;">${r.name}</div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function col(title, s) {
+  const showSafetyRow = s.provinceKey === "ON" && s.safetyFeeBase > 0;
+  const maxAddonLines = Math.max(s.addonsItems.length, 1);
+
+  return `
+    <div style="padding:16px; border:2px solid #000; border-radius:10px; display:flex; flex-direction:column; justify-content:space-between; background:#fff; height: 100%;">
+      
+      <div>
+        <div style="font-size:18px; font-weight:900; text-align:center; margin-bottom:12px;">${escapeHtml(title)}</div>
+        
+        ${row(t("cmp_car_before"), fmt(s.discountedPrice))}
+        ${buildAddonListWithPricesHtml(s.addonsItems, maxAddonLines)}
+        
+        <div style="height:2px; background:#000; margin:12px 0 8px;"></div>
+        
+        ${showSafetyRow ? row(t("ont_safety"), fmt(s.safetyFeeBase)) : ""}
+        ${row(t("trade_with_tax_added"), "-" + fmt(s.tradeInWithTax))}
+        ${row(t("payoff_added"), "+" + fmt(s.payoff))}
+        ${row(t("down_payment"), "-" + fmt(s.downPayment))}
+      </div>
+
+      <div style="margin-top:auto; border-top: 2px solid #000; padding-top: 12px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px;">
+          <div style="font-size:13px; line-height:1.2; font-weight:600; max-width:60%;">
+            ${escapeHtml(t(s.paymentLabelKey))}
+            <div style="font-size:11px; opacity:0.8; margin-top:2px;">${escapeHtml(t("ui_tax_included"))}</div>
+          </div>
+          <b style="font-size:24px; line-height:1; white-space:nowrap;">${escapeHtml(fmt(s.payment))}</b>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:24px; height:24px; border:2px solid #000; border-radius:4px;"></div>
+          <div style="font-size:14px; font-weight:800;">${escapeHtml(t("client_choice"))}</div>
+        </div>
+      </div>
+
     </div>
   `;
 }
@@ -746,13 +806,9 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
 
   const tradeInWithTax = tradeInEntered * (1 + taxRate);
 
-  // Other fees removed
   const extraFees = 0;
-
   const includeSafety = (el("includeSafetyFee")?.value || "no") === "yes";
   const safetyFeeBase = includeSafety ? clampNumber(el("safetyFee")?.value) : 0;
-
-  // Financed with tax, displayed before tax
   const safetyFeeFinanced = safetyFeeBase * (1 + taxRate);
 
   const totalFeesDisplay = extraFees + safetyFeeBase;
@@ -761,24 +817,35 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
   let amountFinanced = priceWithTax - tradeInWithTax + payoff + totalFeesFinanced - downPayment;
   if (amountFinanced < 0) amountFinanced = 0;
 
+  const purchaseType = el("purchaseType")?.value || "finance";
   const freq = el("paymentFreq")?.value || "monthly";
   const pm = getPaymentMeta(termMonths, freq);
 
-  const payment = calcPayment(amountFinanced, apr, pm.perYear, pm.totalPayments);
-  const totalPaid = payment * pm.totalPayments;
-  const totalInterest = Math.max(0, totalPaid - amountFinanced);
+  let payment, totalPaid, totalInterest, paymentLabelKey;
+
+  if (purchaseType === "cash") {
+    // For Cash deals, payment is total remaining out-the-door price.
+    payment = amountFinanced + downPayment; 
+    totalPaid = payment;
+    totalInterest = 0;
+    paymentLabelKey = "pay_cash";
+  } else {
+    // Financing mathematics
+    payment = calcPayment(amountFinanced, apr, pm.perYear, pm.totalPayments);
+    totalPaid = payment * pm.totalPayments;
+    totalInterest = Math.max(0, totalPaid - amountFinanced);
+    paymentLabelKey = pm.labelKey;
+  }
 
   return {
+    purchaseType,
     provinceKey,
     taxRate,
-
     vin: cleanVin(el("vin")?.value),
     vehicleTitle: (el("vehicleTitle")?.value || "").trim(),
     stockNumber: (el("stockNumber")?.value || "").trim(),
-
     discountNote: (el("discountNote")?.value || "").trim(),
     downPaymentNote: (el("downPaymentNote")?.value || "").trim(),
-
     price,
     discount,
     discountedPrice,
@@ -786,20 +853,17 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
     addonsBeforeTax,
     addonsWithTax,
     priceWithTax,
-
     tradeInEntered,
     tradeInWithTax,
     payoff,
-
     safetyFeeBase,
     totalFeesDisplay,
-
     downPayment,
     apr,
     termMonths,
     amountFinanced,
     payment,
-    paymentLabelKey: pm.labelKey,
+    paymentLabelKey,
     totalPaid,
     totalInterest
   };
@@ -832,55 +896,15 @@ function recompute() {
   if (el("totalPaidOut")) el("totalPaidOut").textContent = fmt(s.totalPaid);
   if (el("interestOut")) el("interestOut").textContent = fmt(s.totalInterest);
 
+  // Hide interest and total paid list items if cash deal
+  if (el("interestRow")) el("interestRow").style.display = s.purchaseType === "cash" ? "none" : "flex";
+  if (el("totalPaidRow")) el("totalPaidRow").style.display = s.purchaseType === "cash" ? "none" : "flex";
+
   updateVehicleDisplay();
 }
 
 /* ---------------------------
-   Print mode (landscape)
---------------------------- */
-// 1) REPLACE your whole setPrintMode() with this version
-function setPrintMode(orientation) {
-  const id = "tg_print_style";
-  let style = document.getElementById(id);
-  if (!style) {
-    style = document.createElement("style");
-    style.id = id;
-    document.head.appendChild(style);
-  }
-
-  const pageSize = orientation === "landscape" ? "landscape" : "portrait";
-
-  // Smaller margins in landscape so the comparison fills the page more
-  const margin = orientation === "landscape" ? "4mm" : "8mm";
-
-  style.textContent = `
-    #printArea { display: none; }
-
-    @media print {
-      @page { size: ${pageSize}; margin: ${margin}; }
-
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body > *:not(#printArea) { display: none !important; }
-
-      #printArea { display: block !important; }
-      #printArea .printPage,
-      #printArea .cmpPage { page-break-after: avoid !important; break-after: avoid !important; }
-
-      #printArea { height: auto !important; overflow: visible !important; }
-
-      /* Make comparison page bigger but still 1 page */
-      #printArea { font-size: 13px !important; }
-      .cmpGrid { gap: 12px !important; }
-      .cmpCol { padding: 18px !important; }
-      .cmpColTitle { font-size: 17px !important; }
-      .cmpPickBox { width: 28px !important; height: 28px !important; border-width: 2px !important; }
-    }
-  `;
-}
-
-
-/* ---------------------------
-   Detailed print
+   Detailed Print
 --------------------------- */
 function buildPrintHtml(summary) {
   const locale = LANG === "fr" ? "fr-CA" : "en-CA";
@@ -902,8 +926,9 @@ function buildPrintHtml(summary) {
 
         <div style="text-align:right">
           <div class="printSub">${escapeHtml(t("tax"))}: ${escapeHtml(nicePct(summary.taxRate))}%</div>
+          ${summary.purchaseType === 'finance' ? `
           <div class="printSub">${escapeHtml(t("term"))}: ${escapeHtml(String(summary.termMonths))}</div>
-          <div class="printSub">${escapeHtml(t("apr"))}: ${escapeHtml(String(summary.apr))}%</div>
+          <div class="printSub">${escapeHtml(t("apr"))}: ${escapeHtml(String(summary.apr))}%</div>` : ''}
         </div>
       </div>
 
@@ -941,11 +966,13 @@ function buildPrintHtml(summary) {
         </div>
 
         <div class="printBox">
-          <h3>${escapeHtml(t("financing"))}</h3>
+          <h3>${summary.purchaseType === 'finance' ? escapeHtml(t("financing")) : escapeHtml(t("opt_cash"))}</h3>
           <div class="printRow"><span><b>${escapeHtml(t("amount_financed"))}</b></span><b>${fmt(summary.amountFinanced)}</b></div>
           <div class="printRow"><span>${escapeHtml(t(summary.paymentLabelKey))}</span><b class="printBig">${fmt(summary.payment)}</b></div>
+          
+          ${summary.purchaseType === 'finance' ? `
           <div class="printRow"><span>${escapeHtml(t("total_payments"))}</span><b>${fmt(summary.totalPaid)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("total_interest"))}</span><b>${fmt(summary.totalInterest)}</b></div>
+          <div class="printRow"><span>${escapeHtml(t("total_interest"))}</span><b>${fmt(summary.totalInterest)}</b></div>` : ''}
         </div>
       </div>
 
@@ -967,93 +994,35 @@ function printQuote() {
     window.removeEventListener("afterprint", cleanup);
   };
   window.addEventListener("afterprint", cleanup);
-
   window.print();
 }
 
-/* ---------------------------
-   Comparison print (bigger columns, still 1 page)
---------------------------- */
 function buildComparisonPrintHtml(s1, s2, s3) {
   const locale = LANG === "fr" ? "fr-CA" : "en-CA";
   const dateStr = new Date().toLocaleString(locale);
-
   const taxPct = nicePct(s1.taxRate);
-  const showSafetyRow = s1.provinceKey === "ON" && s1.safetyFeeBase > 0;
-
-  const maxAddonLines = Math.max(s1.addonsItems.length, s2.addonsItems.length, s3.addonsItems.length, 1);
-
-  // 2) INSIDE buildComparisonPrintHtml(), replace ONLY the row() and col() helpers with these:
-
-function row(label, value) {
-  return `
-    <div class="cmpRow" style="padding:5px 0;">
-      <span style="font-size:13px; line-height:1.12;">${escapeHtml(label)}</span>
-      <b style="font-size:13px; line-height:1.12;">${escapeHtml(value)}</b>
-    </div>
-  `;
-}
-
-function col(title, s) {
-  return `
-    <div class="cmpCol" style="padding:18px; display:flex; flex-direction:column;">
-      <div class="cmpColTitle" style="font-size:17px;">${escapeHtml(title)}</div>
-
-      <div style="flex:1;">
-        ${row(t("cmp_car_before"), fmt(s.discountedPrice))}
-        ${buildAddonListWithPricesHtml(s.addonsItems, maxAddonLines)}
-
-        <div class="cmpDivider" style="margin:7px 0;"></div>
-
-        ${showSafetyRow ? row(t("ont_safety"), fmt(s.safetyFeeBase)) : ""}
-        ${row(t("trade_with_tax_added"), "-" + fmt(s.tradeInWithTax))}
-        ${row(t("payoff_added"), "+" + fmt(s.payoff))}
-        ${row(t("down_payment"), "-" + fmt(s.downPayment))}
-
-        <div class="cmpDivider" style="margin:7px 0;"></div>
-
-        <div class="cmpRow big" style="align-items:flex-end; padding:7px 0;">
-          <span style="font-size:13px; line-height:1.12;">
-            ${escapeHtml(t(s.paymentLabelKey))}
-            <div style="font-size:12px; opacity:0.7; margin-top:2px;">${escapeHtml(t("ui_tax_included"))}</div>
-          </span>
-          <b style="font-size:20px; line-height:1;">${escapeHtml(fmt(s.payment))}</b>
-        </div>
-      </div>
-
-      <div class="cmpPick" style="margin-top:8px;">
-        <div class="cmpPickBox" style="width:28px; height:28px; border:2px solid #000;"></div>
-        <div class="cmpPickText">${escapeHtml(t("client_choice"))}</div>
-      </div>
-    </div>
-  `;
-}
-
 
   return `
     <div class="cmpPage">
-      <div class="cmpHeader" style="margin-bottom:6px;">
+      <div class="cmpHeader">
         <div class="cmpBrand">
           <img class="cmpLogo" src="./logo.jpg" alt="${escapeHtml(t("dealer"))}">
           <div>
             <div class="cmpDealer">${escapeHtml(t("dealer"))}</div>
             <div class="cmpSub">${escapeHtml(t("generated"))}: ${escapeHtml(dateStr)}</div>
-
             ${s1.vehicleTitle ? `<div class="cmpSub">${escapeHtml(t("vehicle"))}: ${escapeHtml(s1.vehicleTitle)}</div>` : ""}
             ${s1.vin ? `<div class="cmpSub">${escapeHtml(t("vin"))}: ${escapeHtml(s1.vin)}</div>` : ""}
             ${s1.stockNumber ? `<div class="cmpSub">${escapeHtml(t("stock"))}: ${escapeHtml(s1.stockNumber)}</div>` : ""}
-
             <div class="cmpSub">${escapeHtml(t("province"))}: ${escapeHtml(s1.provinceKey)} | ${escapeHtml(t("tax"))}: ${escapeHtml(taxPct)}%</div>
           </div>
         </div>
-
         <div class="cmpRight">
+          ${s1.purchaseType === 'finance' ? `
           <div class="cmpSub">${escapeHtml(t("apr"))}: ${escapeHtml(String(s1.apr))}%</div>
-          <div class="cmpSub">${escapeHtml(t("term"))}: ${escapeHtml(String(s1.termMonths))}</div>
+          <div class="cmpSub">${escapeHtml(t("term"))}: ${escapeHtml(String(s1.termMonths))}</div>` : ''}
         </div>
       </div>
-
-      <div class="cmpGrid" style="gap:10px;">
+      <div class="cmpGrid">
         ${col(t("opt1"), s1)}
         ${col(t("opt2"), s2)}
         ${col(t("opt3"), s3)}
@@ -1078,7 +1047,6 @@ function printComparisonQuote() {
     window.removeEventListener("afterprint", cleanup);
   };
   window.addEventListener("afterprint", cleanup);
-
   window.print();
 }
 
@@ -1088,6 +1056,7 @@ function printComparisonQuote() {
 function bindInputs() {
   const ids = [
     "lang",
+    "purchaseType",
     "province",
     "price",
     "tradeIn",
@@ -1123,6 +1092,9 @@ function bindInputs() {
 
   const langSel = el("lang");
   if (langSel) langSel.addEventListener("change", () => setLanguage(langSel.value));
+
+  const pt = el("purchaseType");
+  if (pt) pt.addEventListener("change", togglePurchaseType);
 
   const prov = el("province");
   if (prov) {
@@ -1161,6 +1133,10 @@ function bindInputs() {
   const rb = el("resetBtn");
   if (rb) {
     rb.addEventListener("click", () => {
+      if (el("purchaseType")) {
+        el("purchaseType").value = "finance";
+        togglePurchaseType();
+      }
       if (el("province")) el("province").value = "QC";
       if (el("price")) el("price").value = 25000;
       if (el("tradeIn")) el("tradeIn").value = 5000;
@@ -1214,7 +1190,6 @@ document.addEventListener("DOMContentLoaded", () => {
   ensureCustomAddonUI();
   hideOtherFeesUI();
 
-  // Default add-on prices if empty
   for (const a of ADDONS) {
     const priceNode = el(a.priceId);
     if (priceNode && clampNumber(priceNode.value) === 0) priceNode.value = a.defaultPrice;
@@ -1225,6 +1200,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   applyLanguageToUI();
   bindInputs();
+  togglePurchaseType();
   updateVehicleDisplay();
   recompute();
 });
