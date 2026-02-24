@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Toyota Gatineau</title>
+  <title>Toyota Gatineau - Pro Desk</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -27,256 +27,231 @@
       <div class="badge" data-i18n="ui_tax_included">Tax Included</div>
     </div>
 
-    <div class="sectionTitle">
-      <h2 data-i18n="sec_vehicle">Vehicle</h2><div class="sectionLine" aria-hidden="true"></div>
-    </div>
-
-    <div class="row">
-      <div class="field">
-        <label for="vin" data-i18n="label_vin">VIN</label>
-        <input id="vin" type="text" maxlength="17" placeholder="17 characters" data-i18n-placeholder="ph_vin" />
-        <div class="hint" id="vinStatus"></div>
+    <div class="card vehicleCard">
+      <div class="row" style="margin-bottom:0; align-items: flex-end;">
+        <div class="field">
+          <label for="vin" data-i18n="label_vin">VIN</label>
+          <div style="display:flex; gap:8px;">
+            <input id="vin" type="text" maxlength="17" placeholder="17 characters" data-i18n-placeholder="ph_vin" />
+            <button id="decodeVinBtn" type="button" data-i18n="btn_decode_vin" style="margin:0; white-space:nowrap;">Decode</button>
+          </div>
+          <div class="hint" id="vinStatus"></div>
+        </div>
+        <div class="field" style="flex:2;">
+          <label for="vehicleTitle" data-i18n="label_vehicleTitle">Vehicle (Year Make Model Trim)</label>
+          <input id="vehicleTitle" type="text" placeholder="Example: 2026 Toyota RAV4 XLE AWD" data-i18n-placeholder="ph_vehicleTitle" />
+        </div>
+        <div class="field" style="flex:0.8;">
+          <label for="stockNumber" data-i18n="label_stock">Stock#</label>
+          <input id="stockNumber" type="text" />
+        </div>
       </div>
-
-      <div class="field">
-        <label for="vehicleTitle" data-i18n="label_vehicleTitle">Vehicle (Year Make Model Trim)</label>
-        <input id="vehicleTitle" type="text" placeholder="Example: 2021 Toyota RAV4 XLE AWD" data-i18n-placeholder="ph_vehicleTitle" />
-      </div>
-
-      <div class="field">
-        <label for="stockNumber" data-i18n="label_stock">Stock#</label>
-        <input id="stockNumber" type="text" />
-      </div>
-    </div>
-
-    <div class="btnRow">
-      <button id="decodeVinBtn" type="button" data-i18n="btn_decode_vin">Decode VIN</button>
-    </div>
-
-    <div class="vehicleBanner" id="vehicleBanner">
-      <div class="vehicleBig" id="vehicleTitleOut" data-i18n="ui_vehicle_not_set">Vehicle not set</div>
-      <div class="vehicleSmall" id="vinOut"></div>
     </div>
 
     <div class="grid">
-      <div class="card">
+      <div class="card inputsCard">
         
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_purchase_type">Purchase Type</h2><div class="sectionLine" aria-hidden="true"></div>
+        <div class="tabs">
+          <button class="tab-btn active" data-target="tab-deal" data-i18n="tab_deal">Deal Structure</button>
+          <button class="tab-btn" data-target="tab-trade" data-i18n="tab_trade">Trade & Cash</button>
+          <button class="tab-btn" data-target="tab-options" data-i18n="tab_options">Options & Fees</button>
         </div>
-        <div class="row">
-          <div class="field">
-            <label for="purchaseType" data-i18n="label_purchaseType">Type</label>
-            <select id="purchaseType">
-              <option value="finance" data-i18n="opt_finance">Finance / Financement</option>
-              <option value="cash" data-i18n="opt_cash">Cash / Comptant</option>
-            </select>
+
+        <div id="tab-deal" class="tab-content active">
+          <div class="row">
+            <div class="field">
+              <label for="purchaseType" data-i18n="label_purchaseType">Purchase Type</label>
+              <select id="purchaseType">
+                <option value="finance" data-i18n="opt_finance">Finance / Financement</option>
+                <option value="cash" data-i18n="opt_cash">Cash / Comptant</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="province" data-i18n="label_province">Province</label>
+              <select id="province">
+                <option value="QC" data-i18n="prov_qc">Quebec (14.975%)</option>
+                <option value="ON" data-i18n="prov_on">Ontario (13%)</option>
+                <option value="BC" data-i18n="prov_bc">British Columbia (12%)</option>
+                <option value="AB" data-i18n="prov_ab">Alberta (5%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="price" data-i18n="label_price">Car price (before tax)</label>
+              <input id="price" type="number" min="0" step="0.01" value="25000" />
+            </div>
+          </div>
+
+          <div id="financeFieldsWrap">
+            <div class="sectionTitle">
+              <h2 data-i18n="sec_loan">Loan Details</h2><div class="sectionLine" aria-hidden="true"></div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="rate" data-i18n="label_rate">APR (interest %)</label>
+                <input id="rate" type="number" min="0" step="0.01" value="8.99" />
+              </div>
+              <div class="field">
+                <label for="term" data-i18n="label_term">Term (months)</label>
+                <select id="term">
+                  <option value="12">12</option>
+                  <option value="24">24</option>
+                  <option value="36">36</option>
+                  <option value="48">48</option>
+                  <option value="60">60</option>
+                  <option value="72" selected>72</option>
+                  <option value="84">84</option>
+                  <option value="96">96</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="paymentFreq" data-i18n="label_paymentFreq">Payment frequency</label>
+                <select id="paymentFreq">
+                  <option value="monthly" data-i18n="freq_monthly">Monthly</option>
+                  <option value="biweekly" data-i18n="freq_biweekly">Bi-weekly (26/yr)</option>
+                  <option value="weekly" data-i18n="freq_weekly">Weekly (52/yr)</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_vehicle_province">Vehicle & Province</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="province" data-i18n="label_province">Province</label>
-            <select id="province">
-              <option value="QC" data-i18n="prov_qc">Quebec (14.975%)</option>
-              <option value="ON" data-i18n="prov_on">Ontario (13%)</option>
-              <option value="BC" data-i18n="prov_bc">British Columbia (12%)</option>
-              <option value="AB" data-i18n="prov_ab">Alberta (5%)</option>
-            </select>
-            <div class="hint" data-i18n="hint_on_550">Ontario adds $550 automatically.</div>
+        <div id="tab-trade" class="tab-content">
+          <div class="row">
+            <div class="field">
+              <label for="tradeIn" data-i18n="label_tradeIn">Trade-in value (entered)</label>
+              <input id="tradeIn" type="number" min="0" step="0.01" value="5000" />
+              <div class="hint" data-i18n="hint_trade_tax">Your rule: trade-in gets tax added on top.</div>
+            </div>
+            <div class="field">
+              <label for="payoff" data-i18n="label_payoff">Trade loan payoff</label>
+              <input id="payoff" type="number" min="0" step="0.01" value="0" />
+              <div class="hint" data-i18n="hint_payoff">Payoff is added to amount financed.</div>
+            </div>
           </div>
 
-          <div class="field">
-            <label for="price" data-i18n="label_price">Car price (before tax)</label>
-            <input id="price" type="number" min="0" step="0.01" value="25000" />
-          </div>
-        </div>
-
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_tradein">Trade-in</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="tradeIn" data-i18n="label_tradeIn">Trade-in value (entered)</label>
-            <input id="tradeIn" type="number" min="0" step="0.01" value="5000" />
-            <div class="hint" data-i18n="hint_trade_tax">Your rule: trade-in gets tax added on top.</div>
-          </div>
-
-          <div class="field">
-            <label for="payoff" data-i18n="label_payoff">Trade loan payoff</label>
-            <input id="payoff" type="number" min="0" step="0.01" value="0" />
-            <div class="hint" data-i18n="hint_payoff">Payoff is added to amount financed.</div>
-          </div>
-        </div>
-
-        <div id="financeFieldsWrap">
           <div class="sectionTitle">
-            <h2 data-i18n="sec_loan">Loan</h2><div class="sectionLine" aria-hidden="true"></div>
+            <h2 data-i18n="sec_down_discount">Down Payment & Discount</h2><div class="sectionLine" aria-hidden="true"></div>
           </div>
-
           <div class="row">
             <div class="field">
               <label for="downPayment" data-i18n="label_downPayment">Down payment</label>
               <input id="downPayment" type="number" min="0" step="0.01" value="0" />
             </div>
-
             <div class="field">
               <label for="downPaymentNote" data-i18n="label_downPaymentNote">Down payment note (optional)</label>
               <input id="downPaymentNote" type="text" placeholder="Example: Cash / Debit / Transfer" data-i18n-placeholder="ph_downNote" />
             </div>
           </div>
+          <div class="row">
+            <div class="field">
+              <label for="discount" data-i18n="label_discount">Discount (before tax)</label>
+              <input id="discount" type="number" min="0" step="0.01" value="0" />
+            </div>
+            <div class="field">
+              <label for="discountNote" data-i18n="label_discountNote">Discount note (optional)</label>
+              <input id="discountNote" type="text" placeholder="Example: Promo" data-i18n-placeholder="ph_discountNote" />
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-options" class="tab-content">
+          <div class="row">
+            <div class="field">
+              <label for="includeSafetyFee" data-i18n="label_includeSafety">Ontario safety fee</label>
+              <select id="includeSafetyFee">
+                <option value="yes" data-i18n="opt_include">Include</option>
+                <option value="no" data-i18n="opt_no">No</option>
+              </select>
+              <div class="hint" data-i18n="hint_safety_edit">Auto-fills to $550 when Ontario is selected.</div>
+            </div>
+            <div class="field">
+              <label for="safetyFee" data-i18n="label_safety_amt">Safety fee amount</label>
+              <input id="safetyFee" type="number" min="0" step="0.01" value="550" />
+            </div>
+          </div>
+
+          <div class="sectionTitle">
+            <h2 data-i18n="sec_addons">Add-ons</h2><div class="sectionLine" aria-hidden="true"></div>
+          </div>
 
           <div class="row">
             <div class="field">
-              <label for="rate" data-i18n="label_rate">APR (interest %)</label>
-              <input id="rate" type="number" min="0" step="0.01" value="8.99" />
-            </div>
-
-            <div class="field">
-              <label for="term" data-i18n="label_term">Term (months)</label>
-              <select id="term">
-                <option value="12">12</option>
-                <option value="24">24</option>
-                <option value="36">36</option>
-                <option value="48">48</option>
-                <option value="60">60</option>
-                <option value="72" selected>72</option>
-                <option value="84">84</option>
-                <option value="96">96</option>
+              <label for="includeRust" data-i18n="label_rust">Rustproofing</label>
+              <select id="includeRust">
+                <option value="yes" data-i18n="opt_include">Include</option>
+                <option value="no" data-i18n="opt_no">No</option>
               </select>
+            </div>
+            <div class="field">
+              <label for="rustProofing" data-i18n="label_rust_price">Rustproofing price</label>
+              <input id="rustProofing" type="number" min="0" step="0.01" value="1398" />
             </div>
           </div>
 
           <div class="row">
             <div class="field">
-              <label for="paymentFreq" data-i18n="label_paymentFreq">Payment frequency</label>
-              <select id="paymentFreq">
-                <option value="monthly" data-i18n="freq_monthly">Monthly</option>
-                <option value="biweekly" data-i18n="freq_biweekly">Bi-weekly (26/yr)</option>
-                <option value="weekly" data-i18n="freq_weekly">Weekly (52/yr)</option>
+              <label for="includeTag" data-i18n="label_tag">TAG system</label>
+              <select id="includeTag">
+                <option value="no" selected data-i18n="opt_no">No</option>
+                <option value="yes" data-i18n="opt_include">Include</option>
               </select>
             </div>
-
             <div class="field">
-              <label for="extraFees" data-i18n="label_extraFees">Other fees</label>
-              <input id="extraFees" type="number" min="0" step="0.01" value="0" />
+              <label for="tagPrice" data-i18n="label_tag_price">TAG price</label>
+              <input id="tagPrice" type="number" min="0" step="0.01" value="695" />
             </div>
           </div>
-        </div>
 
-        <div class="sectionTitle" style="margin-top: 20px;">
-          <h2 data-i18n="label_includeSafety">Fees & Discounts</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="includeSafetyFee" data-i18n="label_includeSafety">Ontario safety fee</label>
-            <select id="includeSafetyFee">
-              <option value="yes" data-i18n="opt_include">Include</option>
-              <option value="no" data-i18n="opt_no">No</option>
-            </select>
-            <div class="hint" data-i18n="hint_safety_edit">Auto-fills to $550 when Ontario is selected, but you can edit or remove it.</div>
+          <div class="row">
+            <div class="field">
+              <label for="warrantyType" data-i18n="label_warranty">Warranty 3y / 60,000 km</label>
+              <select id="warrantyType">
+                <option value="none" data-i18n="w_none">None</option>
+                <option value="fwd" data-i18n="w_fwd">FWD (suggested $2795)</option>
+                <option value="awd" data-i18n="w_awd">AWD (suggested $2995)</option>
+                <option value="other" data-i18n="w_other">Other (manual)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="warrantyPrice" data-i18n="label_warranty_price">Warranty price</label>
+              <input id="warrantyPrice" type="number" min="0" step="0.01" value="0" />
+            </div>
           </div>
 
-          <div class="field">
-            <label for="safetyFee" data-i18n="label_safety_amt">Safety fee amount</label>
-            <input id="safetyFee" type="number" min="0" step="0.01" value="550" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="discount" data-i18n="label_discount">Discount (before tax)</label>
-            <input id="discount" type="number" min="0" step="0.01" value="0" />
-            <div class="hint" data-i18n="hint_discount">This reduces the vehicle price before taxes.</div>
-          </div>
-
-          <div class="field">
-            <label for="discountNote" data-i18n="label_discountNote">Discount note (optional)</label>
-            <input id="discountNote" type="text" placeholder="Example: Promo, Manager discount" data-i18n-placeholder="ph_discountNote" />
-          </div>
-        </div>
-
-        <div class="sectionTitle">
-          <h2 data-i18n="sec_addons">Add-ons</h2><div class="sectionLine" aria-hidden="true"></div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="includeRust" data-i18n="label_rust">Rustproofing</label>
-            <select id="includeRust">
-              <option value="yes" data-i18n="opt_include">Include</option>
-              <option value="no" data-i18n="opt_no">No</option>
-            </select>
-            <div class="hint" data-i18n="hint_rust_default">Default is $1398</div>
-          </div>
-
-          <div class="field">
-            <label for="rustProofing" data-i18n="label_rust_price">Rustproofing price</label>
-            <input id="rustProofing" type="number" min="0" step="0.01" value="1398" />
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="includeTag" data-i18n="label_tag">TAG system</label>
-            <select id="includeTag">
-              <option value="no" selected data-i18n="opt_no">No</option>
-              <option value="yes" data-i18n="opt_include">Include</option>
-            </select>
-            <div class="hint" data-i18n="hint_tag_default">Default is $695 (plus tax)</div>
-          </div>
-
-          <div class="field">
-            <label for="tagPrice" data-i18n="label_tag_price">TAG price</label>
-            <input id="tagPrice" type="number" min="0" step="0.01" value="695" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="warrantyType" data-i18n="label_warranty">Warranty 3y / 60,000 km</label>
-            <select id="warrantyType">
-              <option value="none" data-i18n="w_none">None</option>
-              <option value="fwd" data-i18n="w_fwd">FWD (suggested $2795)</option>
-              <option value="awd" data-i18n="w_awd">AWD (suggested $2995)</option>
-              <option value="other" data-i18n="w_other">Other (manual)</option>
-            </select>
-            <div class="hint" data-i18n="hint_warranty">Selecting FWD/AWD auto-fills the price, you can still change it.</div>
-          </div>
-
-          <div class="field">
-            <label for="warrantyPrice" data-i18n="label_warranty_price">Warranty price</label>
-            <input id="warrantyPrice" type="number" min="0" step="0.01" value="0" />
+          <div id="dynamicAddonsContainer"></div>
+          
+          <div style="margin-top: 16px;">
+            <button id="addDynamicAddonBtn" type="button" class="outline-btn" data-i18n="btn_add_accessory">+ Add Accessory</button>
           </div>
         </div>
 
         <div class="divider"></div>
 
         <div class="btnRow">
-          <button id="resetBtn" type="button" data-i18n="btn_reset">Reset example</button>
+          <button id="resetBtn" type="button" class="outline-btn" data-i18n="btn_reset">Reset</button>
           <button id="printBtn" type="button" data-i18n="btn_print">Print quote</button>
           <button id="printCompareBtn" type="button" data-i18n="btn_print_compare">Print Comparison</button>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card resultsCard sticky">
         <div class="resultsHeader">
-          <h2 data-i18n="sec_results">Results</h2>
-          <div class="chip" id="provinceChip">Province: QC</div>
+          <h2 data-i18n="sec_results">Live Results</h2>
+          <div class="chip" id="provinceChip">QC</div>
+        </div>
+
+        <div class="vehicleBanner" id="vehicleBanner" style="margin: 0 0 16px 0; padding: 10px;">
+          <div class="vehicleBig" id="vehicleTitleOut" data-i18n="ui_vehicle_not_set" style="font-size: 14px;">Vehicle not set</div>
+          <div class="vehicleSmall" id="vinOut" style="font-size: 11px;"></div>
         </div>
 
         <div class="big" id="paymentOut">$0.00</div>
         <div class="paymentLabel" id="paymentLabel" data-i18n="ui_payment_label">Monthly payment (tax included)</div>
-
-        <div class="chips">
-          <div class="chip" id="taxChip">Tax: 0%</div>
-          <div class="chip" id="feeChip">Fees: $0.00</div>
-        </div>
 
         <ul class="list">
           <li><span class="k" data-i18n="r_price">Car price (before tax)</span><span class="v" id="priceOut">$0.00</span></li>
@@ -292,10 +267,8 @@
         </ul>
 
         <div class="warn" data-i18n="ui_note_rules">
-          Note: This uses your custom rules (trade-in tax added, Ontario $550, add-ons taxed).
+          Bank-grade strict rounding applied. Trade-in is pre-tax savings. Add-ons taxed by province.
         </div>
-
-        <div class="footer" data-i18n="ui_values_cad">All values CAD.</div>
       </div>
     </div>
   </div>
@@ -303,7 +276,6 @@
   <div id="printArea"></div>
 
   <script src="script.js"></script>
-
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof t === "function") {

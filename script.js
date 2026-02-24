@@ -1,10 +1,8 @@
 /* =========================================================
-   Toyota Gatineau Loan Calculator (script.js)
+   Toyota Gatineau Pro Desk (script.js)
+   Features: Tabbed UI, Dynamic Add-ons, Strict Bank Rounding
    ========================================================= */
 
-/* ---------------------------
-   i18n
---------------------------- */
 const I18N = {
   en: {
     ui_language: "Language",
@@ -12,21 +10,19 @@ const I18N = {
     ui_tax_included: "Tax Included",
     ui_vehicle_not_set: "Vehicle not set",
     ui_payment_label: "Monthly payment (tax included)",
-    ui_note_rules: "Note: Trade-in has tax added. Ontario safety fee is financed with tax added. Add-ons are taxed by province.",
+    ui_note_rules: "Bank-grade strict rounding applied. Trade-in is pre-tax savings. Add-ons taxed by province.",
     ui_values_cad: "All values CAD.",
+
+    tab_deal: "Deal Structure",
+    tab_trade: "Trade & Cash",
+    tab_options: "Options & Fees",
+    sec_down_discount: "Down Payment & Discount",
 
     sec_purchase_type: "Purchase Type",
     label_purchaseType: "Type",
     opt_finance: "Finance",
     opt_cash: "Cash Deal",
     pay_cash: "Total Cash Price (tax included)",
-
-    sec_vehicle: "Vehicle",
-    sec_vehicle_province: "Vehicle & Province",
-    sec_tradein: "Trade-in",
-    sec_loan: "Loan",
-    sec_addons: "Add-ons",
-    sec_results: "Results",
 
     label_vin: "VIN",
     label_vehicleTitle: "Vehicle (Year Make Model Trim)",
@@ -40,7 +36,6 @@ const I18N = {
     label_rate: "APR (interest %)",
     label_term: "Term (months)",
     label_paymentFreq: "Payment frequency",
-    label_extraFees: "Other fees",
     label_includeSafety: "Ontario safety fee",
     label_safety_amt: "Safety fee amount",
     label_discount: "Discount (before tax)",
@@ -48,23 +43,18 @@ const I18N = {
 
     label_rust: "Rustproofing",
     label_rust_price: "Rustproofing price",
-
     label_tag: "TAG system",
     label_tag_price: "TAG price",
-
     label_warranty: "Warranty 3y / 60,000 km",
     label_warranty_price: "Warranty price",
 
-    label_custom_addon: "Manual add-on",
-    label_custom_addon_name: "Add-on name",
-    label_custom_addon_price: "Add-on price",
-    hint_custom_addon: "Enter a name and a price (tax will be added by province).",
+    btn_add_accessory: "+ Add Accessory",
+    ph_custom_addon_name: "Accessory Name (e.g., Tint, Mats)",
 
     ph_vin: "17 characters",
-    ph_vehicleTitle: "Example: 2021 Toyota RAV4 XLE AWD",
+    ph_vehicleTitle: "Example: 2026 Toyota RAV4 XLE AWD",
     ph_downNote: "Example: Cash / Debit / Transfer",
     ph_discountNote: "Example: Promo, Manager discount",
-    ph_custom_addon_name: "Example: Winter tires",
 
     prov_qc: "Quebec (14.975%)",
     prov_on: "Ontario (13%)",
@@ -77,7 +67,6 @@ const I18N = {
 
     opt_include: "Include",
     opt_no: "No",
-
     w_none: "None",
     w_fwd: "FWD (suggested $2795)",
     w_awd: "AWD (suggested $2995)",
@@ -86,14 +75,10 @@ const I18N = {
     hint_on_550: "Ontario enables safety fee automatically.",
     hint_trade_tax: "Your rule: trade-in gets tax added on top.",
     hint_payoff: "Payoff is added to amount financed.",
-    hint_safety_edit: "Auto-fills to $549.95 when Ontario is selected (displayed before tax). It is financed with tax added.",
-    hint_discount: "This reduces the vehicle price before taxes.",
-    hint_rust_default: "Default is $1398",
-    hint_tag_default: "Default is $695 (plus tax)",
-    hint_warranty: "Selecting FWD/AWD auto-fills the price, you can still change it.",
-
-    btn_decode_vin: "Decode VIN",
-    btn_reset: "Reset example",
+    hint_safety_edit: "Auto-fills to $549.95 when Ontario is selected.",
+    
+    btn_decode_vin: "Decode",
+    btn_reset: "Reset",
     btn_print: "Print quote",
     btn_print_compare: "Print Comparison",
 
@@ -108,10 +93,11 @@ const I18N = {
     r_total_paid: "Total of payments",
     r_interest: "Total interest",
 
-    chip_province: "Province",
-    chip_tax: "Tax",
-    chip_fees: "Fees",
+    sec_loan: "Loan Details",
+    sec_addons: "Add-ons",
+    sec_results: "Live Results",
 
+    chip_province: "Province",
     dealer: "Toyota Gatineau",
     generated: "Generated",
     vehicle: "Vehicle",
@@ -144,7 +130,7 @@ const I18N = {
     amount_financed: "Amount financed / Balance",
     total_payments: "Total of payments",
     total_interest: "Total interest",
-    note_tradein_tax: "Notes: Trade-in has tax added. Ontario safety fee is financed with tax added (but displayed before tax). Add-ons are taxed by province.",
+    note_tradein_tax: "Notes: Strict bank-grade math applied.",
 
     pay_monthly: "Monthly payment (tax included)",
     pay_biweekly: "Bi-weekly payment (tax included)",
@@ -158,13 +144,7 @@ const I18N = {
 
     addon_rust: "Rustproofing",
     addon_tag: "TAG system",
-    addon_warranty: "Warranty",
-
-    vin_need_17: "VIN must be 17 characters.",
-    vin_decoding: "Decoding VIN...",
-    vin_ok: "VIN decoded successfully.",
-    vin_missing: "Decoded, but basic info was missing. Enter the vehicle title manually.",
-    vin_fail: "Could not decode VIN. Check the VIN or enter vehicle info manually."
+    addon_warranty: "Warranty"
   },
 
   fr: {
@@ -173,21 +153,19 @@ const I18N = {
     ui_tax_included: "Taxes incluses",
     ui_vehicle_not_set: "Véhicule non défini",
     ui_payment_label: "Paiement mensuel (taxes incluses)",
-    ui_note_rules: "Note: Taxes ajoutées sur l’échange. Les frais d’inspection Ontario sont financés avec taxes ajoutées. Options taxées selon la province.",
+    ui_note_rules: "Arrondis stricts bancaires appliqués. Taxes ajoutées selon la province.",
     ui_values_cad: "Tous les montants en $ CAD.",
+
+    tab_deal: "Structure",
+    tab_trade: "Échange et Comptant",
+    tab_options: "Options et Frais",
+    sec_down_discount: "Mise de fonds et Rabais",
 
     sec_purchase_type: "Type d'achat",
     label_purchaseType: "Type",
     opt_finance: "Financement",
     opt_cash: "Achat comptant",
     pay_cash: "Prix total comptant (taxes incluses)",
-
-    sec_vehicle: "Véhicule",
-    sec_vehicle_province: "Véhicule et province",
-    sec_tradein: "Échange",
-    sec_loan: "Financement",
-    sec_addons: "Options",
-    sec_results: "Résultats",
 
     label_vin: "NIV",
     label_vehicleTitle: "Véhicule (année marque modèle version)",
@@ -201,7 +179,6 @@ const I18N = {
     label_rate: "Taux d’intérêt (%)",
     label_term: "Terme (mois)",
     label_paymentFreq: "Fréquence de paiement",
-    label_extraFees: "Autres frais",
     label_includeSafety: "Frais d’inspection Ontario",
     label_safety_amt: "Montant des frais d’inspection",
     label_discount: "Rabais (avant taxes)",
@@ -209,23 +186,18 @@ const I18N = {
 
     label_rust: "Antirouille",
     label_rust_price: "Prix antirouille",
-
     label_tag: "Système TAG",
     label_tag_price: "Prix TAG",
-
     label_warranty: "Garantie 3 ans / 60 000 km",
     label_warranty_price: "Prix garantie",
 
-    label_custom_addon: "Option manuelle",
-    label_custom_addon_name: "Nom de l’option",
-    label_custom_addon_price: "Prix de l’option",
-    hint_custom_addon: "Entrez un nom et un prix (taxes ajoutées selon la province).",
+    btn_add_accessory: "+ Ajouter un accessoire",
+    ph_custom_addon_name: "Nom (ex: Vitres teintées, Tapis)",
 
     ph_vin: "17 caractères",
-    ph_vehicleTitle: "Exemple: 2021 Toyota RAV4 XLE AWD",
+    ph_vehicleTitle: "Exemple: 2026 Toyota RAV4 XLE AWD",
     ph_downNote: "Exemple: Argent / Débit / Virement",
     ph_discountNote: "Exemple: Promo, rabais gestionnaire",
-    ph_custom_addon_name: "Exemple: Pneus d’hiver",
 
     prov_qc: "Québec (14,975%)",
     prov_on: "Ontario (13%)",
@@ -238,23 +210,18 @@ const I18N = {
 
     opt_include: "Inclure",
     opt_no: "Non",
-
     w_none: "Aucune",
     w_fwd: "FWD (suggéré 2795$)",
     w_awd: "AWD (suggéré 2995$)",
     w_other: "Autre (manuel)",
 
-    hint_on_550: "En Ontario, les frais d’inspection s’activent automatiquement.",
+    hint_on_550: "En Ontario, les frais s’activent automatiquement.",
     hint_trade_tax: "Votre règle: taxes ajoutées sur l’échange.",
     hint_payoff: "Le solde à payer est ajouté au montant financé.",
-    hint_safety_edit: "Auto-remplit à 549,95$ en Ontario (affiché avant taxes). Financé avec taxes ajoutées.",
-    hint_discount: "Réduit le prix du véhicule avant taxes.",
-    hint_rust_default: "Par défaut: 1398$",
-    hint_tag_default: "Par défaut: 695$ (plus taxes)",
-    hint_warranty: "FWD/AWD remplit automatiquement le prix, vous pouvez modifier.",
+    hint_safety_edit: "Auto-remplit à 549,95$ en Ontario.",
 
-    btn_decode_vin: "Décoder le NIV",
-    btn_reset: "Réinitialiser l’exemple",
+    btn_decode_vin: "Décoder",
+    btn_reset: "Réinitialiser",
     btn_print: "Imprimer la soumission",
     btn_print_compare: "Imprimer comparatif",
 
@@ -269,10 +236,11 @@ const I18N = {
     r_total_paid: "Total des paiements",
     r_interest: "Intérêts totaux",
 
-    chip_province: "Province",
-    chip_tax: "Taxes",
-    chip_fees: "Frais",
+    sec_loan: "Détails du prêt",
+    sec_addons: "Options",
+    sec_results: "Résultats en direct",
 
+    chip_province: "Province",
     dealer: "Toyota Gatineau",
     generated: "Généré",
     vehicle: "Véhicule",
@@ -305,7 +273,7 @@ const I18N = {
     amount_financed: "Montant financé / Solde",
     total_payments: "Total des paiements",
     total_interest: "Intérêts totaux",
-    note_tradein_tax: "Notes: Taxes ajoutées sur l’échange. Frais Ontario financés avec taxes ajoutées. Options taxées selon la province.",
+    note_tradein_tax: "Notes: Arrondis stricts appliqués.",
 
     pay_monthly: "Paiement mensuel (taxes incluses)",
     pay_biweekly: "Paiement aux 2 semaines (taxes incluses)",
@@ -319,13 +287,7 @@ const I18N = {
 
     addon_rust: "Antirouille",
     addon_tag: "Système TAG",
-    addon_warranty: "Garantie",
-
-    vin_need_17: "Le NIV doit contenir 17 caractères.",
-    vin_decoding: "Décodage du NIV...",
-    vin_ok: "NIV décodé avec succès.",
-    vin_missing: "Décodé, mais infos incomplètes. Entrez le véhicule manuellement.",
-    vin_fail: "Impossible de décoder le NIV. Vérifiez le NIV ou entrez le véhicule manuellement."
+    addon_warranty: "Garantie"
   }
 };
 
@@ -336,38 +298,14 @@ function t(key) {
 }
 
 /* ---------------------------
-   Helpers
+   Helpers & Math
 --------------------------- */
 const el = (id) => document.getElementById(id);
-
-function escapeHtml(str) {
-  return String(str ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function clampNumber(v) {
-  const n = Number(v);
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-}
-// Bank-grade rounding to the exact penny
-function round2(v) {
-  return Math.round((v + Number.EPSILON) * 100) / 100;
-}
-
-function nicePct(p) {
-  const s = (p * 100).toFixed(3);
-  return s.replace(/0+$/, "").replace(/\.$/, "");
-}
-
-function fmt(n) {
-  const locale = LANG === "fr" ? "fr-CA" : "en-CA";
-  return new Intl.NumberFormat(locale, { style: "currency", currency: "CAD" }).format(n);
-}
-
+function escapeHtml(str) { return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+function clampNumber(v) { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : 0; }
+function round2(v) { return Math.round((v + Number.EPSILON) * 100) / 100; }
+function nicePct(p) { const s = (p * 100).toFixed(3); return s.replace(/0+$/, "").replace(/\.$/, ""); }
+function fmt(n) { return new Intl.NumberFormat(LANG === "fr" ? "fr-CA" : "en-CA", { style: "currency", currency: "CAD" }).format(n); }
 function calcPayment(principal, annualRatePct, paymentsPerYear, totalPayments) {
   const r = annualRatePct / 100 / paymentsPerYear;
   if (principal <= 0) return 0;
@@ -379,666 +317,395 @@ function calcPayment(principal, annualRatePct, paymentsPerYear, totalPayments) {
 /* ---------------------------
    Data
 --------------------------- */
-const PROVINCES = {
-  QC: { name: "Quebec", taxRate: 0.14975 },
-  ON: { name: "Ontario", taxRate: 0.13 },
-  BC: { name: "British Columbia", taxRate: 0.12 },
-  AB: { name: "Alberta", taxRate: 0.05 }
-};
-
-const WARRANTY_DEFAULTS = {
-  none: 0,
-  fwd: 2795,
-  awd: 2995,
-  other: 0
-};
-
+const PROVINCES = { QC: { taxRate: 0.14975 }, ON: { taxRate: 0.13 }, BC: { taxRate: 0.12 }, AB: { taxRate: 0.05 } };
+const WARRANTY_DEFAULTS = { none: 0, fwd: 2795, awd: 2995, other: 0 };
 const ON_SAFETY_BASE = 549.95;
-
 const ADDONS = [
   { key: "rust", labelKey: "addon_rust", includeId: "includeRust", priceId: "rustProofing", defaultPrice: 1398 },
   { key: "tag", labelKey: "addon_tag", includeId: "includeTag", priceId: "tagPrice", defaultPrice: 695 }
 ];
 
-const CUSTOM_ADDON = {
-  nameId: "customAddonName",
-  priceId: "customAddonPrice",
-  wrapId: "customAddonWrap"
-};
+/* ---------------------------
+   Dynamic Add-ons System
+--------------------------- */
+let dynamicAddonCount = 0;
+
+function addDynamicAddon() {
+  dynamicAddonCount++;
+  const id = dynamicAddonCount;
+  const container = el("dynamicAddonsContainer");
+  
+  const div = document.createElement("div");
+  div.className = "row dynamic-row";
+  div.id = `dynamic-addon-${id}`;
+  
+  div.innerHTML = `
+    <div class="field">
+      <input type="text" class="dyn-name" placeholder="${escapeHtml(t("ph_custom_addon_name"))}" />
+    </div>
+    <div class="field price-field">
+      <input type="number" class="dyn-price" min="0" step="0.01" value="0" />
+    </div>
+    <button type="button" class="remove-btn" onclick="removeDynamicAddon(${id})">✕</button>
+  `;
+  
+  container.appendChild(div);
+  
+  div.querySelector('.dyn-name').addEventListener('input', recompute);
+  div.querySelector('.dyn-price').addEventListener('input', recompute);
+}
+
+function removeDynamicAddon(id) {
+  const row = el(`dynamic-addon-${id}`);
+  if (row) row.remove();
+  recompute();
+}
 
 /* ---------------------------
-   Language apply
+   Tabs Logic
+--------------------------- */
+function initTabs() {
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      el(btn.dataset.target).classList.add("active");
+    });
+  });
+}
+
+/* ---------------------------
+   General UI functions
 --------------------------- */
 function applyLanguageToUI() {
-  document.querySelectorAll("[data-i18n]").forEach((node) => {
-    const key = node.getAttribute("data-i18n");
-    if (!key) return;
-    node.textContent = t(key);
-  });
-
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
-    const key = node.getAttribute("data-i18n-placeholder");
-    if (!key) return;
-    node.setAttribute("placeholder", t(key));
-  });
-
-  const tagLabel = document.querySelector('label[for="includeTag"]');
-  if (tagLabel) tagLabel.textContent = t("label_tag");
-  const tagPriceLabel = document.querySelector('label[for="tagPrice"]');
-  if (tagPriceLabel) tagPriceLabel.textContent = t("label_tag_price");
-
-  const tagSel = el("includeTag");
-  if (tagSel && tagSel.options && tagSel.options.length >= 2) {
-    const cur = tagSel.value;
-    tagSel.options[0].textContent = t("opt_no");
-    tagSel.options[1].textContent = t("opt_include");
-    tagSel.value = cur;
-  }
-  const tagHint = tagSel?.closest(".field")?.querySelector(".hint");
-  if (tagHint) tagHint.textContent = t("hint_tag_default");
-
-  const wrap = el(CUSTOM_ADDON.wrapId);
-  if (wrap) {
-    const title = wrap.querySelector("[data-custom-title]");
-    if (title) title.textContent = t("label_custom_addon");
-    const nameLabel = wrap.querySelector('label[for="' + CUSTOM_ADDON.nameId + '"]');
-    if (nameLabel) nameLabel.textContent = t("label_custom_addon_name");
-    const priceLabel = wrap.querySelector('label[for="' + CUSTOM_ADDON.priceId + '"]');
-    if (priceLabel) priceLabel.textContent = t("label_custom_addon_price");
-    const nameInput = el(CUSTOM_ADDON.nameId);
-    if (nameInput) nameInput.setAttribute("placeholder", t("ph_custom_addon_name"));
-    const hint = wrap.querySelector(".hint");
-    if (hint) hint.textContent = t("hint_custom_addon");
-  }
-
+  document.querySelectorAll("[data-i18n]").forEach(n => { const k = n.getAttribute("data-i18n"); if (k) n.textContent = t(k); });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(n => { const k = n.getAttribute("data-i18n-placeholder"); if (k) n.setAttribute("placeholder", t(k)); });
   updateVehicleDisplay();
   recompute();
 }
 
 function setLanguage(lang) {
   LANG = lang === "fr" ? "fr" : "en";
-  try {
-    localStorage.setItem("tg_lang", LANG);
-  } catch (_) {}
+  try { localStorage.setItem("tg_lang", LANG); } catch (_) {}
   applyLanguageToUI();
 }
 
-/* ---------------------------
-   Purchase Type Toggle
---------------------------- */
 function togglePurchaseType() {
   const type = el("purchaseType")?.value || "finance";
   const wrap = el("financeFieldsWrap");
-  if (wrap) {
-    wrap.style.display = type === "cash" ? "none" : "block";
-  }
+  if (wrap) wrap.style.display = type === "cash" ? "none" : "block";
   recompute();
-}
-
-/* ---------------------------
-   VIN decode
---------------------------- */
-function cleanVin(raw) {
-  return (raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-}
-
-function setVinStatus(msg) {
-  const node = el("vinStatus");
-  if (node) node.textContent = msg || "";
 }
 
 function updateVehicleDisplay() {
   const vin = cleanVin(el("vin")?.value);
   const vehicleTitle = (el("vehicleTitle")?.value || "").trim();
-
   if (el("vehicleTitleOut")) el("vehicleTitleOut").textContent = vehicleTitle || t("ui_vehicle_not_set");
   if (el("vinOut")) el("vinOut").textContent = vin ? `${t("vin")}: ${vin}` : "";
 }
 
+function cleanVin(raw) { return (raw || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+function setVinStatus(msg) { const node = el("vinStatus"); if (node) node.textContent = msg || ""; }
+
 async function decodeVin() {
-  const vinInput = el("vin");
-  const btn = el("decodeVinBtn");
+  const vinInput = el("vin"); const btn = el("decodeVinBtn");
   if (!vinInput) return;
-
-  const vin = cleanVin(vinInput.value);
-  vinInput.value = vin;
-
-  if (vin.length !== 17) {
-    setVinStatus(t("vin_need_17"));
-    updateVehicleDisplay();
-    return;
-  }
-
-  setVinStatus(t("vin_decoding"));
-  if (btn) btn.disabled = true;
-
+  const vin = cleanVin(vinInput.value); vinInput.value = vin;
+  if (vin.length !== 17) { setVinStatus(t("vin_need_17")); updateVehicleDisplay(); return; }
+  setVinStatus(t("vin_decoding")); if (btn) btn.disabled = true;
   try {
-    const url = `https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/${encodeURIComponent(vin)}?format=json`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/${encodeURIComponent(vin)}?format=json`);
+    if (!res.ok) throw new Error("HTTP error");
     const data = await res.json();
-    const row = data?.Results?.[0];
-    if (!row) throw new Error("No results");
-
-    const year = (row.ModelYear || "").trim();
-    const make = (row.Make || "").trim();
-    const model = (row.Model || "").trim();
-    const trim = (row.Trim || "").trim();
-    const series = (row.Series || "").trim();
-    const body = (row.BodyClass || "").trim();
-
-    if (!year || !make || !model) {
-      setVinStatus(t("vin_missing"));
-      updateVehicleDisplay();
-      return;
-    }
-
-    const extras = [trim, series].filter(Boolean).join(" ").trim();
-    const title = [year, make, model, extras || body].filter(Boolean).join(" ").replace(/\s+/g, " ");
-
+    const row = data?.Results?.[0]; if (!row) throw new Error("No results");
+    const title = [row.ModelYear, row.Make, row.Model, row.Trim || row.Series || row.BodyClass].filter(Boolean).join(" ").replace(/\s+/g, " ");
     if (el("vehicleTitle")) el("vehicleTitle").value = title;
-
     setVinStatus(t("vin_ok"));
-    updateVehicleDisplay();
-    recompute();
-  } catch (e) {
-    setVinStatus(t("vin_fail"));
-    updateVehicleDisplay();
-  } finally {
-    if (btn) btn.disabled = false;
+  } catch (e) { setVinStatus(t("vin_fail")); } finally {
+    if (btn) btn.disabled = false; updateVehicleDisplay(); recompute();
   }
 }
 
-/* ---------------------------
-   Warranty autofill
---------------------------- */
 let warrantyAutoFillEnabled = true;
-
 function updateWarrantyPriceFromType() {
   const type = el("warrantyType")?.value || "none";
-  const suggested = WARRANTY_DEFAULTS[type] ?? 0;
-  if (warrantyAutoFillEnabled && el("warrantyPrice")) el("warrantyPrice").value = suggested;
+  if (warrantyAutoFillEnabled && el("warrantyPrice")) el("warrantyPrice").value = WARRANTY_DEFAULTS[type] ?? 0;
 }
 
-/* ---------------------------
-   Ontario safety fee behavior
---------------------------- */
 function syncSafetyFeeWithProvince() {
-  const provinceKey = el("province")?.value || "QC";
-  const includeNode = el("includeSafetyFee");
-  const feeNode = el("safetyFee");
-  if (!includeNode || !feeNode) return;
-
-  if (provinceKey === "ON") {
-    includeNode.value = "yes";
-    const cur = clampNumber(feeNode.value);
-    if (cur === 0 || Math.abs(cur - 550) < 0.2) feeNode.value = ON_SAFETY_BASE;
-  } else {
-    includeNode.value = "no";
-    feeNode.value = 0;
-  }
-}
-
-function hideOtherFeesUI() {
-  const n = el("extraFees");
-  if (!n) return;
-  const field = n.closest(".field");
-  if (field) field.style.display = "none";
-  const row = n.closest(".row");
-  if (row) {
-    const visibleFields = Array.from(row.querySelectorAll(".field")).filter((f) => f.style.display !== "none");
-    if (visibleFields.length === 0) row.style.display = "none";
-  }
+  const p = el("province")?.value || "QC";
+  const inc = el("includeSafetyFee"); const fee = el("safetyFee");
+  if (p === "ON") { inc.value = "yes"; if (clampNumber(fee.value) === 0 || Math.abs(clampNumber(fee.value) - 550) < 0.2) fee.value = ON_SAFETY_BASE; }
+  else { inc.value = "no"; fee.value = 0; }
 }
 
 /* ---------------------------
-   Manual add-on UI (aligned)
---------------------------- */
-function ensureCustomAddonUI() {
-  if (el(CUSTOM_ADDON.wrapId)) return;
-
-  const warrantyPriceInput = el("warrantyPrice");
-  const anchorRow = warrantyPriceInput?.closest(".row") || el("warrantyType")?.closest(".row");
-  const parent = anchorRow?.parentElement;
-  if (!parent) return;
-
-  const wrap = document.createElement("div");
-  wrap.id = CUSTOM_ADDON.wrapId;
-  wrap.innerHTML = `
-    <div style="margin-top:10px; font-weight:800;" data-custom-title>${escapeHtml(t("label_custom_addon"))}</div>
-    <div class="row" style="align-items:flex-start;">
-      <div class="field" style="flex:1;">
-        <label for="${CUSTOM_ADDON.nameId}">${escapeHtml(t("label_custom_addon_name"))}</label>
-        <input id="${CUSTOM_ADDON.nameId}" type="text" placeholder="${escapeHtml(t("ph_custom_addon_name"))}" />
-        <div class="hint" style="margin-top:6px;">${escapeHtml(t("hint_custom_addon"))}</div>
-      </div>
-      <div class="field" style="max-width:240px;">
-        <label for="${CUSTOM_ADDON.priceId}">${escapeHtml(t("label_custom_addon_price"))}</label>
-        <input id="${CUSTOM_ADDON.priceId}" type="number" min="0" step="0.01" value="0" />
-        <div class="hint" style="visibility:hidden; margin-top:6px;">.</div>
-      </div>
-    </div>
-  `;
-  parent.insertBefore(wrap, anchorRow.nextSibling);
-}
-
-function getCustomAddonItem() {
-  const name = (el(CUSTOM_ADDON.nameId)?.value || "").trim();
-  const price = clampNumber(el(CUSTOM_ADDON.priceId)?.value);
-  if (!name || price <= 0) return null;
-  return { key: "custom", label: name, price };
-}
-
-/* ---------------------------
-   Add-ons logic
+   Core Logic & Strict Math
 --------------------------- */
 function getAddonsForScenario({ useRust = null, useWarranty = null } = {}) {
   const items = [];
-
   for (const a of ADDONS) {
-    const includeUI = (el(a.includeId)?.value || "no") === "yes";
-    const price = clampNumber(el(a.priceId)?.value);
-    let include = includeUI;
+    let include = (el(a.includeId)?.value || "no") === "yes";
     if (a.key === "rust" && useRust !== null) include = !!useRust;
+    const price = clampNumber(el(a.priceId)?.value);
     if (include && price > 0) items.push({ key: a.key, label: t(a.labelKey), price });
   }
 
-  const warrantyPrice = clampNumber(el("warrantyPrice")?.value);
-  const warrantyType = el("warrantyType")?.value || "none";
-  const warrantyUIIncluded = warrantyType !== "none" && warrantyPrice > 0;
-
-  let includeWarranty = warrantyUIIncluded;
+  const wPrice = clampNumber(el("warrantyPrice")?.value);
+  let includeWarranty = (el("warrantyType")?.value !== "none" && wPrice > 0);
   if (useWarranty !== null) includeWarranty = !!useWarranty;
+  if (includeWarranty && wPrice > 0) items.push({ key: "warranty", label: t("addon_warranty"), price: wPrice });
 
-  if (includeWarranty && warrantyPrice > 0) {
-    items.push({ key: "warranty", label: t("addon_warranty"), price: warrantyPrice });
-  }
+  document.querySelectorAll(".dynamic-row").forEach(row => {
+    const name = row.querySelector(".dyn-name").value.trim();
+    const price = clampNumber(row.querySelector(".dyn-price").value);
+    if (name && price > 0) items.push({ key: "custom", label: name, price });
+  });
 
-  const custom = getCustomAddonItem();
-  if (custom) items.push(custom);
-
-  const totalBeforeTax = items.reduce((s, x) => s + (x.price || 0), 0);
-  return { items, totalBeforeTax };
+  return { items, totalBeforeTax: items.reduce((s, x) => s + (x.price || 0), 0) };
 }
 
-function buildAddonListNamesOnlyHtml(items) {
-  const names = (items || []).map((x) => escapeHtml(x.label));
-  const lines = names.length ? names : [escapeHtml(t("addon_none"))];
+function getPaymentMeta(term, freq) {
+  if (freq === "biweekly") return { perYear: 26, totalPayments: Math.round((term / 12) * 26), labelKey: "pay_biweekly" };
+  if (freq === "weekly") return { perYear: 52, totalPayments: Math.round((term / 12) * 52), labelKey: "pay_weekly" };
+  return { perYear: 12, totalPayments: term, labelKey: "pay_monthly" };
+}
 
-  return `
-    <div style="margin-top:6px;">
-      <div style="font-weight:700; margin-bottom:4px;">${escapeHtml(t("addons_included"))}</div>
-      ${lines.map((name) => `<div style="margin:2px 0; font-size:12px; line-height:1.12;">${name}</div>`).join("")}
-    </div>
-  `;
+function computeTotals({ useRust = null, useWarranty = null } = {}) {
+  const rules = PROVINCES[el("province")?.value || "QC"] || PROVINCES.QC;
+  const taxRate = rules.taxRate;
+  const discount = clampNumber(el("discount")?.value);
+  const discountedPrice = Math.max(0, clampNumber(el("price")?.value) - discount);
+  
+  const addons = getAddonsForScenario({ useRust, useWarranty });
+  const addonsBeforeTax = round2(addons.totalBeforeTax);
+  const safetyFeeBase = (el("includeSafetyFee")?.value || "no") === "yes" ? clampNumber(el("safetyFee")?.value) : 0;
+
+  const baseWithTax = round2(discountedPrice + round2(discountedPrice * taxRate));
+  const addonsWithTax = round2(addonsBeforeTax + round2(addonsBeforeTax * taxRate));
+  const tradeInEntered = clampNumber(el("tradeIn")?.value);
+  const tradeInWithTax = round2(tradeInEntered + round2(tradeInEntered * taxRate));
+  const safetyFeeFinanced = round2(safetyFeeBase + round2(safetyFeeBase * taxRate));
+  const payoff = clampNumber(el("payoff")?.value);
+  const downPayment = clampNumber(el("downPayment")?.value);
+
+  let amountFinanced = round2(baseWithTax + addonsWithTax + safetyFeeFinanced - tradeInWithTax + payoff - downPayment);
+  if (amountFinanced < 0) amountFinanced = 0;
+
+  const purchaseType = el("purchaseType")?.value || "finance";
+  const pm = getPaymentMeta(Math.max(1, Math.floor(clampNumber(el("term")?.value))), el("paymentFreq")?.value || "monthly");
+  
+  let payment, totalPaid, totalInterest, paymentLabelKey;
+  if (purchaseType === "cash") {
+    payment = round2(amountFinanced + downPayment); 
+    totalPaid = payment; totalInterest = 0; paymentLabelKey = "pay_cash";
+  } else {
+    payment = round2(calcPayment(amountFinanced, clampNumber(el("rate")?.value), pm.perYear, pm.totalPayments));
+    totalPaid = round2(payment * pm.totalPayments);
+    totalInterest = Math.max(0, round2(totalPaid - amountFinanced));
+    paymentLabelKey = pm.labelKey;
+  }
+
+  return {
+    purchaseType, provinceKey: el("province")?.value || "QC", taxRate,
+    vin: cleanVin(el("vin")?.value), vehicleTitle: (el("vehicleTitle")?.value || "").trim(), stockNumber: (el("stockNumber")?.value || "").trim(),
+    price: clampNumber(el("price")?.value), discount, discountedPrice,
+    addonsItems: addons.items, addonsBeforeTax, addonsWithTax, priceWithTax: baseWithTax, 
+    tradeInEntered, tradeInWithTax, payoff, safetyFeeBase, totalFeesDisplay: round2(safetyFeeBase), downPayment,
+    apr: clampNumber(el("rate")?.value), termMonths: Math.max(1, Math.floor(clampNumber(el("term")?.value))),
+    amountFinanced, payment, paymentLabelKey, totalPaid, totalInterest
+  };
+}
+
+function recompute() {
+  const s = computeTotals();
+  if (el("paymentOut")) el("paymentOut").textContent = fmt(s.payment);
+  if (el("paymentLabel")) el("paymentLabel").textContent = t(s.paymentLabelKey);
+  if (el("provinceChip")) el("provinceChip").textContent = s.provinceKey;
+  if (el("priceOut")) el("priceOut").textContent = fmt(s.price);
+  if (el("priceWithTaxOut")) el("priceWithTaxOut").textContent = fmt(s.priceWithTax);
+  if (el("addonsOut")) el("addonsOut").textContent = fmt(s.addonsBeforeTax);
+  if (el("addonsWithTaxOut")) el("addonsWithTaxOut").textContent = fmt(s.addonsWithTax);
+  if (el("tradeWithTaxOut")) el("tradeWithTaxOut").textContent = "-" + fmt(s.tradeInWithTax);
+  if (el("payoffOut")) el("payoffOut").textContent = "+" + fmt(s.payoff);
+  if (el("feesOut")) el("feesOut").textContent = "+" + fmt(s.totalFeesDisplay);
+  if (el("amountFinancedOut")) el("amountFinancedOut").textContent = fmt(s.amountFinanced);
+  if (el("totalPaidOut")) el("totalPaidOut").textContent = fmt(s.totalPaid);
+  if (el("interestOut")) el("interestOut").textContent = fmt(s.totalInterest);
+  
+  if (el("interestRow")) el("interestRow").style.display = s.purchaseType === "cash" ? "none" : "flex";
+  if (el("totalPaidRow")) el("totalPaidRow").style.display = s.purchaseType === "cash" ? "none" : "flex";
+  updateVehicleDisplay();
 }
 
 /* ---------------------------
-   Print mode
+   Print Layouts (Fully Inline & Protected)
 --------------------------- */
 function setPrintMode(orientation) {
-  const id = "tg_print_style";
-  let style = document.getElementById(id);
-  if (!style) {
-    style = document.createElement("style");
-    style.id = id;
-    document.head.appendChild(style);
-  }
-
+  const id = "tg_print_style"; let style = el(id);
+  if (!style) { style = document.createElement("style"); style.id = id; document.head.appendChild(style); }
   const isLand = orientation === "landscape";
   
   style.textContent = `
     #printArea { display: none; }
     @media print {
       @page { size: ${isLand ? "landscape" : "portrait"}; margin: 8mm; }
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fff !important; color: #000 !important; }
+      body { background: #fff !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       body > *:not(#printArea) { display: none !important; }
       #printArea { display: block !important; position: static !important; width: 100% !important; }
-      
       * { box-sizing: border-box !important; }
-
-      ${isLand ? `
-      /* Locks the landscape sheet to exactly 1 page */
-      .cmpPage { height: 95vh; display: flex; flex-direction: column; overflow: hidden; page-break-inside: avoid; }
-      .cmpGrid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; margin-top: 10px; }
-      
-      /* Updated Header to allow a massive logo */
-      .cmpHeader { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 15px; }
-      .cmpBrand { display: flex; gap: 20px; align-items: center; }
-      .cmpLogo { height: 110px !important; width: auto !important; max-width: 300px !important; object-fit: contain; display: block; }
-      ` : ``}
     }
   `;
 }
 
 function row(label, value) {
-  return `
-    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #888; font-size:13px;">
-      <span>${escapeHtml(label)}</span>
-      <b style="white-space:nowrap;">${escapeHtml(value)}</b>
-    </div>
-  `;
+  return `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dotted #888; font-size:13px;"><span>${escapeHtml(label)}</span><b style="white-space:nowrap;">${escapeHtml(value)}</b></div>`;
 }
 
 function buildAddonListWithPricesHtml(items, minLines = 0) {
-  const rows = (items || []).map((x) => ({ name: escapeHtml(x.label) }));
+  const rows = (items || []).map(x => ({ name: escapeHtml(x.label) }));
   if (!rows.length) rows.push({ name: escapeHtml(t("addon_none")) });
   while (rows.length < minLines) rows.push({ name: `<span style="visibility:hidden">.</span>` });
-
-  return `
-    <div style="margin: 12px 0;">
-      <div style="font-weight:800; font-size:12px; margin-bottom:6px;">${escapeHtml(t("addons_included"))}</div>
-      ${rows.map((r) => `
-        <div style="padding: 3px 0; font-size:13px; font-weight:700;">${r.name}</div>
-      `).join("")}
-    </div>
-  `;
+  return `<div style="margin: 12px 0;"><div style="font-weight:800; font-size:12px; margin-bottom:6px;">${escapeHtml(t("addons_included"))}</div>${rows.map((r) => `<div style="padding: 3px 0; font-size:13px; font-weight:700;">${r.name}</div>`).join("")}</div>`;
 }
 
 function col(title, s) {
   const showSafetyRow = s.provinceKey === "ON" && s.safetyFeeBase > 0;
-  const maxAddonLines = Math.max(s.addonsItems.length, 1);
-
   return `
     <div style="padding:16px; border:2px solid #000; border-radius:10px; display:flex; flex-direction:column; justify-content:space-between; background:#fff; height: 100%;">
-      
       <div>
         <div style="font-size:18px; font-weight:900; text-align:center; margin-bottom:12px;">${escapeHtml(title)}</div>
-        
         ${row(t("cmp_car_before"), fmt(s.discountedPrice))}
-        ${buildAddonListWithPricesHtml(s.addonsItems, maxAddonLines)}
-        
+        ${buildAddonListWithPricesHtml(s.addonsItems, 0)}
         <div style="height:2px; background:#000; margin:12px 0 8px;"></div>
-        
         ${showSafetyRow ? row(t("ont_safety"), fmt(s.safetyFeeBase)) : ""}
         ${row(t("trade_with_tax_added"), "-" + fmt(s.tradeInWithTax))}
         ${row(t("payoff_added"), "+" + fmt(s.payoff))}
         ${row(t("down_payment"), "-" + fmt(s.downPayment))}
       </div>
-
       <div style="margin-top:auto; border-top: 2px solid #000; padding-top: 12px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px;">
-          <div style="font-size:13px; line-height:1.2; font-weight:600; max-width:60%;">
-            ${escapeHtml(t(s.paymentLabelKey))}
-            <div style="font-size:11px; opacity:0.8; margin-top:2px;">${escapeHtml(t("ui_tax_included"))}</div>
-          </div>
+          <div style="font-size:13px; line-height:1.2; font-weight:600; max-width:60%;">${escapeHtml(t(s.paymentLabelKey))}<div style="font-size:11px; opacity:0.8; margin-top:2px;">${escapeHtml(t("ui_tax_included"))}</div></div>
           <b style="font-size:24px; line-height:1; white-space:nowrap;">${escapeHtml(fmt(s.payment))}</b>
         </div>
-
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:24px; height:24px; border:2px solid #000; border-radius:4px;"></div>
-          <div style="font-size:14px; font-weight:800;">${escapeHtml(t("client_choice"))}</div>
-        </div>
+        <div style="display:flex; align-items:center; gap:10px;"><div style="width:24px; height:24px; border:2px solid #000; border-radius:4px;"></div><div style="font-size:14px; font-weight:800;">${escapeHtml(t("client_choice"))}</div></div>
       </div>
-
     </div>
   `;
 }
 
-/* ---------------------------
-   Core calculations
---------------------------- */
-function getPaymentMeta(termMonths, freq) {
-  if (freq === "biweekly") return { perYear: 26, totalPayments: Math.round((termMonths / 12) * 26), labelKey: "pay_biweekly" };
-  if (freq === "weekly") return { perYear: 52, totalPayments: Math.round((termMonths / 12) * 52), labelKey: "pay_weekly" };
-  return { perYear: 12, totalPayments: termMonths, labelKey: "pay_monthly" };
-}
-
-/* ---------------------------
-   Core calculations (Bank-Grade Rounding)
---------------------------- */
-function computeTotals({ useRust = null, useWarranty = null } = {}) {
-  const provinceKey = el("province")?.value || "QC";
-  const rules = PROVINCES[provinceKey] || PROVINCES.QC;
-  const taxRate = rules.taxRate;
-
-  const price = clampNumber(el("price")?.value);
-  const tradeInEntered = clampNumber(el("tradeIn")?.value);
-  const payoff = clampNumber(el("payoff")?.value);
-  const downPayment = clampNumber(el("downPayment")?.value);
-
-  const apr = clampNumber(el("rate")?.value);
-  const termMonths = Math.max(1, Math.floor(clampNumber(el("term")?.value)));
-
-  const discount = clampNumber(el("discount")?.value);
-  const discountedPrice = Math.max(0, price - discount);
-
-  // Get Addons
-  const addons = getAddonsForScenario({ useRust, useWarranty });
-  const addonsBeforeTax = round2(addons.totalBeforeTax);
-
-  // Get Fees
-  const includeSafety = (el("includeSafetyFee")?.value || "no") === "yes";
-  const safetyFeeBase = includeSafety ? clampNumber(el("safetyFee")?.value) : 0;
-
-  // ---------------------------------------------------------
-  // STRICT DEALERSHIP ROUNDING (Step-by-step to the penny)
-  // ---------------------------------------------------------
-  
-  const carTax = round2(discountedPrice * taxRate);
-  const baseWithTax = round2(discountedPrice + carTax);
-
-  const addonsTax = round2(addonsBeforeTax * taxRate);
-  const addonsWithTax = round2(addonsBeforeTax + addonsTax);
-
-  const tradeInTax = round2(tradeInEntered * taxRate);
-  const tradeInWithTax = round2(tradeInEntered + tradeInTax);
-
-  const safetyFeeTax = round2(safetyFeeBase * taxRate);
-  const safetyFeeFinanced = round2(safetyFeeBase + safetyFeeTax);
-
-  // Amount Financed (Balance)
-  let amountFinanced = round2(baseWithTax + addonsWithTax + safetyFeeFinanced - tradeInWithTax + payoff - downPayment);
-  if (amountFinanced < 0) amountFinanced = 0;
-
-  const purchaseType = el("purchaseType")?.value || "finance";
-  const freq = el("paymentFreq")?.value || "monthly";
-  const pm = getPaymentMeta(termMonths, freq);
-
-  let payment, totalPaid, totalInterest, paymentLabelKey;
-
-  if (purchaseType === "cash") {
-    payment = round2(amountFinanced + downPayment); 
-    totalPaid = payment;
-    totalInterest = 0;
-    paymentLabelKey = "pay_cash";
-  } else {
-    const rawPayment = calcPayment(amountFinanced, apr, pm.perYear, pm.totalPayments);
-    payment = round2(rawPayment); // Rounds the exact payment to the penny
-    totalPaid = round2(payment * pm.totalPayments);
-    totalInterest = Math.max(0, round2(totalPaid - amountFinanced));
-    paymentLabelKey = pm.labelKey;
-  }
-
-  const totalFeesDisplay = round2(safetyFeeBase);
-
-  return {
-    purchaseType,
-    provinceKey,
-    taxRate,
-    vin: cleanVin(el("vin")?.value),
-    vehicleTitle: (el("vehicleTitle")?.value || "").trim(),
-    stockNumber: (el("stockNumber")?.value || "").trim(),
-    discountNote: (el("discountNote")?.value || "").trim(),
-    downPaymentNote: (el("downPaymentNote")?.value || "").trim(),
-    price,
-    discount,
-    discountedPrice,
-    addonsItems: addons.items,
-    addonsBeforeTax,
-    addonsWithTax,
-    priceWithTax: baseWithTax, 
-    tradeInEntered,
-    tradeInWithTax,
-    payoff,
-    safetyFeeBase,
-    totalFeesDisplay,
-    downPayment,
-    apr,
-    termMonths,
-    amountFinanced,
-    payment,
-    paymentLabelKey,
-    totalPaid,
-    totalInterest
-  };
-}
-
-/* ---------------------------
-   Recompute outputs
---------------------------- */
-function recompute() {
-  const s = computeTotals();
-
-  if (el("paymentOut")) el("paymentOut").textContent = fmt(s.payment);
-  if (el("paymentLabel")) el("paymentLabel").textContent = t(s.paymentLabelKey);
-
-  if (el("provinceChip")) el("provinceChip").textContent = `${t("chip_province")}: ${s.provinceKey}`;
-  if (el("taxChip")) el("taxChip").textContent = `${t("chip_tax")}: ${nicePct(s.taxRate)}%`;
-  if (el("feeChip")) el("feeChip").textContent = `${t("chip_fees")}: ${fmt(s.totalFeesDisplay)}`;
-
-  if (el("priceOut")) el("priceOut").textContent = fmt(s.price);
-  if (el("priceWithTaxOut")) el("priceWithTaxOut").textContent = fmt(s.priceWithTax);
-
-  if (el("addonsOut")) el("addonsOut").textContent = fmt(s.addonsBeforeTax);
-  if (el("addonsWithTaxOut")) el("addonsWithTaxOut").textContent = fmt(s.addonsWithTax);
-
-  if (el("tradeWithTaxOut")) el("tradeWithTaxOut").textContent = "-" + fmt(s.tradeInWithTax);
-  if (el("payoffOut")) el("payoffOut").textContent = "+" + fmt(s.payoff);
-  if (el("feesOut")) el("feesOut").textContent = "+" + fmt(s.totalFeesDisplay);
-
-  if (el("amountFinancedOut")) el("amountFinancedOut").textContent = fmt(s.amountFinanced);
-  if (el("totalPaidOut")) el("totalPaidOut").textContent = fmt(s.totalPaid);
-  if (el("interestOut")) el("interestOut").textContent = fmt(s.totalInterest);
-
-  // Hide interest and total paid list items if cash deal
-  if (el("interestRow")) el("interestRow").style.display = s.purchaseType === "cash" ? "none" : "flex";
-  if (el("totalPaidRow")) el("totalPaidRow").style.display = s.purchaseType === "cash" ? "none" : "flex";
-
-  updateVehicleDisplay();
-}
-
-/* ---------------------------
-   Detailed Print
---------------------------- */
-function buildPrintHtml(summary) {
-  const locale = LANG === "fr" ? "fr-CA" : "en-CA";
-  const dateStr = new Date().toLocaleString(locale);
+// Fixed Single Quote Print Function
+function buildPrintHtml(s) {
+  const dateStr = new Date().toLocaleString(LANG === "fr" ? "fr-CA" : "en-CA");
+  const showSafetyRow = s.provinceKey === "ON" && s.safetyFeeBase > 0;
 
   return `
-    <div class="printPage">
-      <div class="printHeader">
-        <div>
-          <div class="printTitle">${escapeHtml(t("detailed_title"))}</div>
-          <div class="printSub">${escapeHtml(t("generated"))}: ${escapeHtml(dateStr)}</div>
-
-          ${summary.vehicleTitle ? `<div class="printSub">${escapeHtml(t("vehicle"))}: ${escapeHtml(summary.vehicleTitle)}</div>` : ""}
-          ${summary.vin ? `<div class="printSub">${escapeHtml(t("vin"))}: ${escapeHtml(summary.vin)}</div>` : ""}
-          ${summary.stockNumber ? `<div class="printSub">${escapeHtml(t("stock"))}: ${escapeHtml(summary.stockNumber)}</div>` : ""}
-
-          <div class="printSub">${escapeHtml(t("province"))}: ${escapeHtml(summary.provinceKey)}</div>
-        </div>
-
-        <div style="text-align:right">
-          <div class="printSub">${escapeHtml(t("tax"))}: ${escapeHtml(nicePct(summary.taxRate))}%</div>
-          ${summary.purchaseType === 'finance' ? `
-          <div class="printSub">${escapeHtml(t("term"))}: ${escapeHtml(String(summary.termMonths))}</div>
-          <div class="printSub">${escapeHtml(t("apr"))}: ${escapeHtml(String(summary.apr))}%</div>` : ''}
-        </div>
-      </div>
-
-      <div class="printGrid">
-        <div class="printBox">
-          <h3>${escapeHtml(t("pricing"))}</h3>
-
-          <div class="printRow"><span>${escapeHtml(t("car_price_before_tax"))}</span><b>${fmt(summary.price)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("discount_before_tax"))}</span><b>-${fmt(summary.discount)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("price_after_discount"))}</span><b>${fmt(summary.discountedPrice)}</b></div>
-
-          ${buildAddonListNamesOnlyHtml(summary.addonsItems)}
-
-          <div class="printRow"><span>${escapeHtml(t("addons_before_tax"))}</span><b>${fmt(summary.addonsBeforeTax)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("addons_with_tax"))}</span><b>${fmt(summary.addonsWithTax)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("car_price_with_tax_addons"))}</span><b>${fmt(summary.priceWithTax)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("down_payment"))}</span><b>-${fmt(summary.downPayment)}</b></div>
-        </div>
-
-        <div class="printBox">
-          <h3>${escapeHtml(t("trade"))}</h3>
-          <div class="printRow"><span>${escapeHtml(t("trade_entered"))}</span><b>${fmt(summary.tradeInEntered)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("trade_with_tax_added"))}</span><b>${fmt(summary.tradeInWithTax)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("payoff_added"))}</span><b>${fmt(summary.payoff)}</b></div>
-        </div>
-
-        <div class="printBox">
-          <h3>${escapeHtml(t("fees"))}</h3>
-          ${
-            summary.provinceKey === "ON" && summary.safetyFeeBase > 0
-              ? `<div class="printRow"><span>${escapeHtml(t("ont_safety"))}</span><b>${fmt(summary.safetyFeeBase)}</b></div>`
-              : ""
-          }
-          <div class="printRow"><span>${escapeHtml(t("total_fees"))}</span><b>${fmt(summary.totalFeesDisplay)}</b></div>
-        </div>
-
-        <div class="printBox">
-          <h3>${summary.purchaseType === 'finance' ? escapeHtml(t("financing")) : escapeHtml(t("opt_cash"))}</h3>
-          <div class="printRow"><span><b>${escapeHtml(t("amount_financed"))}</b></span><b>${fmt(summary.amountFinanced)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t(summary.paymentLabelKey))}</span><b class="printBig">${fmt(summary.payment)}</b></div>
-          
-          ${summary.purchaseType === 'finance' ? `
-          <div class="printRow"><span>${escapeHtml(t("total_payments"))}</span><b>${fmt(summary.totalPaid)}</b></div>
-          <div class="printRow"><span>${escapeHtml(t("total_interest"))}</span><b>${fmt(summary.totalInterest)}</b></div>` : ''}
-        </div>
-      </div>
-
-      <div class="printNote">${escapeHtml(t("note_tradein_tax"))}</div>
-    </div>
-  `;
-}
-
-function printQuote() {
-  const summary = computeTotals();
-  const area = el("printArea");
-  if (!area) return;
-
-  setPrintMode("portrait");
-  area.innerHTML = buildPrintHtml(summary);
-
-  const cleanup = () => {
-    area.innerHTML = "";
-    window.removeEventListener("afterprint", cleanup);
-  };
-  window.addEventListener("afterprint", cleanup);
-  window.print();
-}
-
-function buildComparisonPrintHtml(s1, s2, s3) {
-  const locale = LANG === "fr" ? "fr-CA" : "en-CA";
-  const dateStr = new Date().toLocaleString(locale);
-  const taxPct = nicePct(s1.taxRate);
-
-  return `
-    <div class="cmpPage">
-      <div class="cmpHeader">
-        <div class="cmpBrand">
-          <img class="cmpLogo" src="./logo.jpg" alt="${escapeHtml(t("dealer"))}">
+    <div style="font-family: sans-serif; background: #fff; color: #000; padding: 10px;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <img src="./logo.jpg" style="height: 85px; width: auto; max-width: 250px; object-fit: contain; display: block;" alt="${escapeHtml(t("dealer"))}">
           <div>
-            <div class="cmpDealer">${escapeHtml(t("dealer"))}</div>
-            <div class="cmpSub">${escapeHtml(t("generated"))}: ${escapeHtml(dateStr)}</div>
-            ${s1.vehicleTitle ? `<div class="cmpSub">${escapeHtml(t("vehicle"))}: ${escapeHtml(s1.vehicleTitle)}</div>` : ""}
-            ${s1.vin ? `<div class="cmpSub">${escapeHtml(t("vin"))}: ${escapeHtml(s1.vin)}</div>` : ""}
-            ${s1.stockNumber ? `<div class="cmpSub">${escapeHtml(t("stock"))}: ${escapeHtml(s1.stockNumber)}</div>` : ""}
-            <div class="cmpSub">${escapeHtml(t("province"))}: ${escapeHtml(s1.provinceKey)} | ${escapeHtml(t("tax"))}: ${escapeHtml(taxPct)}%</div>
+            <div style="font-size: 24px; font-weight: 900; text-transform: uppercase;">${escapeHtml(t("dealer"))}</div>
+            <div style="font-size: 14px; color: #444; margin-top: 4px;">${escapeHtml(t("detailed_title"))}</div>
+            <div style="font-size: 12px; color: #666; margin-top: 2px;">${escapeHtml(t("generated"))}: ${escapeHtml(dateStr)}</div>
           </div>
         </div>
-        <div class="cmpRight">
-          ${s1.purchaseType === 'finance' ? `
-          <div class="cmpSub">${escapeHtml(t("apr"))}: ${escapeHtml(String(s1.apr))}%</div>
-          <div class="cmpSub">${escapeHtml(t("term"))}: ${escapeHtml(String(s1.termMonths))}</div>` : ''}
+        
+        <div style="text-align: right; font-size: 13px; line-height: 1.5;">
+          ${s.vehicleTitle ? `<div><b>${escapeHtml(t("vehicle"))}:</b> ${escapeHtml(s.vehicleTitle)}</div>` : ""}
+          ${s.vin ? `<div><b>${escapeHtml(t("vin"))}:</b> ${escapeHtml(s.vin)}</div>` : ""}
+          ${s.stockNumber ? `<div><b>${escapeHtml(t("stock"))}:</b> ${escapeHtml(s.stockNumber)}</div>` : ""}
+          <div><b>${escapeHtml(t("province"))}:</b> ${escapeHtml(s.provinceKey)} (Tax: ${escapeHtml(nicePct(s.taxRate))}%)</div>
+          ${s.purchaseType === 'finance' ? `
+          <div><b>${escapeHtml(t("apr"))}:</b> ${escapeHtml(String(s.apr))}% &nbsp;|&nbsp; <b>${escapeHtml(t("term"))}:</b> ${escapeHtml(String(s.termMonths))}</div>` : ''}
         </div>
       </div>
-      <div class="cmpGrid">
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        
+        <div style="border: 2px solid #000; border-radius: 10px; padding: 16px;">
+          <div style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 6px;">${escapeHtml(t("pricing"))}</div>
+          
+          ${row(t("car_price_before_tax"), fmt(s.price))}
+          ${s.discount > 0 ? row(t("discount_before_tax"), "-" + fmt(s.discount)) : ""}
+          ${s.discount > 0 ? row(t("price_after_discount"), fmt(s.discountedPrice)) : ""}
+          
+          ${buildAddonListWithPricesHtml(s.addonsItems)}
+          
+          ${row(t("addons_before_tax"), fmt(s.addonsBeforeTax))}
+          ${row(t("car_price_with_tax_addons"), fmt(s.priceWithTax + s.addonsWithTax))}
+          ${row(t("down_payment"), "-" + fmt(s.downPayment))}
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          
+          <div style="border: 2px solid #000; border-radius: 10px; padding: 16px;">
+            <div style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 6px;">${escapeHtml(t("trade"))} & ${escapeHtml(t("fees"))}</div>
+            ${row(t("trade_entered"), fmt(s.tradeInEntered))}
+            ${row(t("trade_with_tax_added"), "-" + fmt(s.tradeInWithTax))}
+            ${row(t("payoff_added"), "+" + fmt(s.payoff))}
+            <div style="height: 6px;"></div>
+            ${showSafetyRow ? row(t("ont_safety"), fmt(s.safetyFeeBase)) : ""}
+            ${row(t("total_fees"), "+" + fmt(s.totalFeesDisplay))}
+          </div>
+
+          <div style="border: 2px solid #000; border-radius: 10px; padding: 16px; background: #fafafa; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 6px;">${s.purchaseType === 'finance' ? escapeHtml(t("financing")) : escapeHtml(t("opt_cash"))}</div>
+              ${row(`<b>${escapeHtml(t("amount_financed"))}</b>`, `<b>${fmt(s.amountFinanced)}</b>`)}
+              ${s.purchaseType === 'finance' ? `
+              ${row(t("total_payments"), fmt(s.totalPaid))}
+              ${row(t("total_interest"), fmt(s.totalInterest))}` : ''}
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px; padding-top: 16px; border-top: 2px solid #000;">
+              <div style="font-size: 14px; font-weight: bold; max-width: 60%;">
+                ${escapeHtml(t(s.paymentLabelKey))}
+                <div style="font-size: 11px; font-weight: normal; margin-top: 2px; opacity: 0.8;">${escapeHtml(t("ui_tax_included"))}</div>
+              </div>
+              <b style="font-size: 26px; line-height: 1;">${fmt(s.payment)}</b>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; font-size: 11px; color: #555; text-align: center;">
+        ${escapeHtml(t("note_tradein_tax"))}
+      </div>
+    </div>
+  `;
+}
+
+// Fixed Comparison Print Function
+function buildComparisonPrintHtml(s1, s2, s3) {
+  const dateStr = new Date().toLocaleString(LANG === "fr" ? "fr-CA" : "en-CA");
+  return `
+    <div style="font-family: sans-serif; background: #fff; color: #000; height: 95vh; display: flex; flex-direction: column; overflow: hidden; page-break-inside: avoid;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 15px;">
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <img src="./logo.jpg" alt="${escapeHtml(t("dealer"))}" style="height: 90px; width: auto; max-width: 250px; object-fit: contain; display: block;">
+          <div>
+            <div style="font-size: 20px; font-weight: 900; text-transform: uppercase;">${escapeHtml(t("dealer"))}</div>
+            <div style="font-size: 12px; color: #555; margin-top: 4px;">${escapeHtml(t("generated"))}: ${escapeHtml(dateStr)}</div>
+          </div>
+        </div>
+        
+        <div style="text-align: right; font-size: 13px; line-height: 1.5;">
+          ${s1.vehicleTitle ? `<div><b>${escapeHtml(t("vehicle"))}:</b> ${escapeHtml(s1.vehicleTitle)}</div>` : ""}
+          ${s1.vin ? `<div><b>${escapeHtml(t("vin"))}:</b> ${escapeHtml(s1.vin)}</div>` : ""}
+          ${s1.stockNumber ? `<div><b>${escapeHtml(t("stock"))}:</b> ${escapeHtml(s1.stockNumber)}</div>` : ""}
+          <div><b>${escapeHtml(t("province"))}:</b> ${escapeHtml(s1.provinceKey)} (Tax: ${escapeHtml(nicePct(s1.taxRate))}%)</div>
+          ${s1.purchaseType === 'finance' ? `
+          <div><b>${escapeHtml(t("apr"))}:</b> ${escapeHtml(String(s1.apr))}% &nbsp;|&nbsp; <b>${escapeHtml(t("term"))}:</b> ${escapeHtml(String(s1.termMonths))}</div>` : ''}
+        </div>
+      </div>
+
+      <div style="flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch;">
         ${col(t("opt1"), s1)}
         ${col(t("opt2"), s2)}
         ${col(t("opt3"), s3)}
@@ -1047,176 +714,75 @@ function buildComparisonPrintHtml(s1, s2, s3) {
   `;
 }
 
+function printQuote() {
+  const area = el("printArea"); if (!area) return;
+  setPrintMode("portrait"); area.innerHTML = buildPrintHtml(computeTotals());
+  const c = () => { area.innerHTML = ""; window.removeEventListener("afterprint", c); };
+  window.addEventListener("afterprint", c); window.print();
+}
+
 function printComparisonQuote() {
-  const option1 = computeTotals({ useRust: true, useWarranty: false });
-  const option2 = computeTotals({ useRust: false, useWarranty: true });
-  const option3 = computeTotals({ useRust: true, useWarranty: true });
-
-  const area = el("printArea");
-  if (!area) return;
-
+  const area = el("printArea"); if (!area) return;
   setPrintMode("landscape");
-  area.innerHTML = buildComparisonPrintHtml(option1, option2, option3);
-
-  const cleanup = () => {
-    area.innerHTML = "";
-    window.removeEventListener("afterprint", cleanup);
-  };
-  window.addEventListener("afterprint", cleanup);
-  window.print();
+  area.innerHTML = buildComparisonPrintHtml(computeTotals({ useRust: true, useWarranty: false }), computeTotals({ useRust: false, useWarranty: true }), computeTotals({ useRust: true, useWarranty: true }));
+  const c = () => { area.innerHTML = ""; window.removeEventListener("afterprint", c); };
+  window.addEventListener("afterprint", c); window.print();
 }
 
 /* ---------------------------
-   Bind events
---------------------------- */
-function bindInputs() {
-  const ids = [
-    "lang",
-    "purchaseType",
-    "province",
-    "price",
-    "tradeIn",
-    "payoff",
-    "downPayment",
-    "rate",
-    "term",
-    "paymentFreq",
-    "discount",
-    "includeSafetyFee",
-    "safetyFee",
-    "downPaymentNote",
-    "discountNote",
-    "vin",
-    "vehicleTitle",
-    "stockNumber",
-    "includeRust",
-    "rustProofing",
-    "includeTag",
-    "tagPrice",
-    "warrantyType",
-    "warrantyPrice",
-    CUSTOM_ADDON.nameId,
-    CUSTOM_ADDON.priceId
-  ];
-
-  ids.forEach((id) => {
-    const node = el(id);
-    if (!node) return;
-    node.addEventListener("input", recompute);
-    node.addEventListener("change", recompute);
-  });
-
-  const langSel = el("lang");
-  if (langSel) langSel.addEventListener("change", () => setLanguage(langSel.value));
-
-  const pt = el("purchaseType");
-  if (pt) pt.addEventListener("change", togglePurchaseType);
-
-  const prov = el("province");
-  if (prov) {
-    prov.addEventListener("change", () => {
-      syncSafetyFeeWithProvince();
-      recompute();
-    });
-  }
-
-  const wt = el("warrantyType");
-  if (wt) {
-    wt.addEventListener("change", () => {
-      warrantyAutoFillEnabled = true;
-      updateWarrantyPriceFromType();
-      recompute();
-    });
-  }
-
-  const wp = el("warrantyPrice");
-  if (wp) {
-    wp.addEventListener("input", () => {
-      warrantyAutoFillEnabled = false;
-      recompute();
-    });
-  }
-
-  const vinBtn = el("decodeVinBtn");
-  if (vinBtn) vinBtn.addEventListener("click", decodeVin);
-
-  const pb = el("printBtn");
-  if (pb) pb.addEventListener("click", printQuote);
-
-  const pcb = el("printCompareBtn");
-  if (pcb) pcb.addEventListener("click", printComparisonQuote);
-
-  const rb = el("resetBtn");
-  if (rb) {
-    rb.addEventListener("click", () => {
-      if (el("purchaseType")) {
-        el("purchaseType").value = "finance";
-        togglePurchaseType();
-      }
-      if (el("province")) el("province").value = "QC";
-      if (el("price")) el("price").value = 25000;
-      if (el("tradeIn")) el("tradeIn").value = 5000;
-      if (el("payoff")) el("payoff").value = 0;
-      if (el("downPayment")) el("downPayment").value = 0;
-
-      if (el("rate")) el("rate").value = 8.99;
-      if (el("term")) el("term").value = "72";
-      if (el("paymentFreq")) el("paymentFreq").value = "monthly";
-
-      if (el("discount")) el("discount").value = 0;
-      if (el("discountNote")) el("discountNote").value = "";
-      if (el("downPaymentNote")) el("downPaymentNote").value = "";
-
-      if (el("includeRust")) el("includeRust").value = "yes";
-      if (el("rustProofing")) el("rustProofing").value = 1398;
-
-      if (el("includeTag")) el("includeTag").value = "no";
-      if (el("tagPrice")) el("tagPrice").value = 695;
-
-      if (el(CUSTOM_ADDON.nameId)) el(CUSTOM_ADDON.nameId).value = "";
-      if (el(CUSTOM_ADDON.priceId)) el(CUSTOM_ADDON.priceId).value = 0;
-
-      if (el("vin")) el("vin").value = "";
-      if (el("vehicleTitle")) el("vehicleTitle").value = "";
-      if (el("stockNumber")) el("stockNumber").value = "";
-      setVinStatus("");
-
-      if (el("warrantyType")) el("warrantyType").value = "none";
-      warrantyAutoFillEnabled = true;
-      updateWarrantyPriceFromType();
-
-      syncSafetyFeeWithProvince();
-      updateVehicleDisplay();
-      recompute();
-    });
-  }
-}
-
-/* ---------------------------
-   Init
+   Init & Binds
 --------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  try {
-    const saved = localStorage.getItem("tg_lang");
-    if (saved === "fr" || saved === "en") LANG = saved;
-  } catch (_) {}
-
+  try { const saved = localStorage.getItem("tg_lang"); if (saved === "fr" || saved === "en") LANG = saved; } catch (_) {}
   if (el("lang")) el("lang").value = LANG;
 
-  ensureCustomAddonUI();
-  hideOtherFeesUI();
+  initTabs();
 
-  for (const a of ADDONS) {
-    const priceNode = el(a.priceId);
-    if (priceNode && clampNumber(priceNode.value) === 0) priceNode.value = a.defaultPrice;
-  }
+  // Bind Standard Inputs
+  ["lang", "purchaseType", "province", "price", "tradeIn", "payoff", "downPayment", "rate", "term", "paymentFreq", "discount", "includeSafetyFee", "safetyFee", "includeRust", "rustProofing", "includeTag", "tagPrice", "warrantyType", "warrantyPrice", "vin", "vehicleTitle", "stockNumber"]
+    .forEach(id => { const n = el(id); if (n) { n.addEventListener("input", recompute); n.addEventListener("change", recompute); } });
 
+  el("lang")?.addEventListener("change", () => setLanguage(el("lang").value));
+  el("purchaseType")?.addEventListener("change", togglePurchaseType);
+  el("province")?.addEventListener("change", () => { syncSafetyFeeWithProvince(); recompute(); });
+  el("warrantyType")?.addEventListener("change", () => { warrantyAutoFillEnabled = true; updateWarrantyPriceFromType(); recompute(); });
+  el("warrantyPrice")?.addEventListener("input", () => { warrantyAutoFillEnabled = false; recompute(); });
+  
+  el("decodeVinBtn")?.addEventListener("click", decodeVin);
+  el("printBtn")?.addEventListener("click", printQuote);
+  el("printCompareBtn")?.addEventListener("click", printComparisonQuote);
+  el("addDynamicAddonBtn")?.addEventListener("click", addDynamicAddon);
+  
+  el("resetBtn")?.addEventListener("click", () => {
+    if (el("purchaseType")) { el("purchaseType").value = "finance"; togglePurchaseType(); }
+    if (el("province")) el("province").value = "QC";
+    if (el("price")) el("price").value = 25000;
+    if (el("tradeIn")) el("tradeIn").value = 5000;
+    ["payoff", "downPayment", "discount"].forEach(id => { if (el(id)) el(id).value = 0; });
+    if (el("rate")) el("rate").value = 8.99;
+    if (el("term")) el("term").value = "72";
+    if (el("paymentFreq")) el("paymentFreq").value = "monthly";
+    if (el("includeRust")) el("includeRust").value = "yes";
+    if (el("rustProofing")) el("rustProofing").value = 1398;
+    if (el("includeTag")) el("includeTag").value = "no";
+    if (el("tagPrice")) el("tagPrice").value = 695;
+    if (el("warrantyType")) el("warrantyType").value = "none";
+    ["vin", "vehicleTitle", "stockNumber", "discountNote", "downPaymentNote"].forEach(id => { if (el(id)) el(id).value = ""; });
+    
+    // Clear dynamic addons
+    el("dynamicAddonsContainer").innerHTML = "";
+    dynamicAddonCount = 0;
+
+    warrantyAutoFillEnabled = true;
+    updateWarrantyPriceFromType();
+    syncSafetyFeeWithProvince();
+    setVinStatus(""); updateVehicleDisplay(); recompute();
+  });
+
+  // Setup defaults
+  for (const a of ADDONS) { const n = el(a.priceId); if (n && clampNumber(n.value) === 0) n.value = a.defaultPrice; }
   updateWarrantyPriceFromType();
   syncSafetyFeeWithProvince();
-
   applyLanguageToUI();
-  bindInputs();
   togglePurchaseType();
-  updateVehicleDisplay();
-  recompute();
 });
