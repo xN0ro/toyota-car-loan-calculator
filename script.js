@@ -353,6 +353,10 @@ function clampNumber(v) {
   const n = Number(v);
   return Number.isFinite(n) && n >= 0 ? n : 0;
 }
+// Bank-grade rounding to the exact penny
+function round2(v) {
+  return Math.round((v + Number.EPSILON) * 100) / 100;
+}
 
 function nicePct(p) {
   const s = (p * 100).toFixed(3);
@@ -781,6 +785,9 @@ function getPaymentMeta(termMonths, freq) {
   return { perYear: 12, totalPayments: termMonths, labelKey: "pay_monthly" };
 }
 
+/* ---------------------------
+   Core calculations (Bank-Grade Rounding)
+--------------------------- */
 function computeTotals({ useRust = null, useWarranty = null } = {}) {
   const provinceKey = el("province")?.value || "QC";
   const rules = PROVINCES[provinceKey] || PROVINCES.QC;
@@ -797,24 +804,32 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
   const discount = clampNumber(el("discount")?.value);
   const discountedPrice = Math.max(0, price - discount);
 
+  // Get Addons
   const addons = getAddonsForScenario({ useRust, useWarranty });
-  const addonsBeforeTax = addons.totalBeforeTax;
-  const addonsWithTax = addonsBeforeTax * (1 + taxRate);
+  const addonsBeforeTax = round2(addons.totalBeforeTax);
 
-  const baseWithTax = discountedPrice * (1 + taxRate);
-  const priceWithTax = baseWithTax + addonsWithTax;
-
-  const tradeInWithTax = tradeInEntered * (1 + taxRate);
-
-  const extraFees = 0;
+  // Get Fees
   const includeSafety = (el("includeSafetyFee")?.value || "no") === "yes";
   const safetyFeeBase = includeSafety ? clampNumber(el("safetyFee")?.value) : 0;
-  const safetyFeeFinanced = safetyFeeBase * (1 + taxRate);
 
-  const totalFeesDisplay = extraFees + safetyFeeBase;
-  const totalFeesFinanced = extraFees + safetyFeeFinanced;
+  // ---------------------------------------------------------
+  // STRICT DEALERSHIP ROUNDING (Step-by-step to the penny)
+  // ---------------------------------------------------------
+  
+  const carTax = round2(discountedPrice * taxRate);
+  const baseWithTax = round2(discountedPrice + carTax);
 
-  let amountFinanced = priceWithTax - tradeInWithTax + payoff + totalFeesFinanced - downPayment;
+  const addonsTax = round2(addonsBeforeTax * taxRate);
+  const addonsWithTax = round2(addonsBeforeTax + addonsTax);
+
+  const tradeInTax = round2(tradeInEntered * taxRate);
+  const tradeInWithTax = round2(tradeInEntered + tradeInTax);
+
+  const safetyFeeTax = round2(safetyFeeBase * taxRate);
+  const safetyFeeFinanced = round2(safetyFeeBase + safetyFeeTax);
+
+  // Amount Financed (Balance)
+  let amountFinanced = round2(baseWithTax + addonsWithTax + safetyFeeFinanced - tradeInWithTax + payoff - downPayment);
   if (amountFinanced < 0) amountFinanced = 0;
 
   const purchaseType = el("purchaseType")?.value || "finance";
@@ -824,18 +839,19 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
   let payment, totalPaid, totalInterest, paymentLabelKey;
 
   if (purchaseType === "cash") {
-    // For Cash deals, payment is total remaining out-the-door price.
-    payment = amountFinanced + downPayment; 
+    payment = round2(amountFinanced + downPayment); 
     totalPaid = payment;
     totalInterest = 0;
     paymentLabelKey = "pay_cash";
   } else {
-    // Financing mathematics
-    payment = calcPayment(amountFinanced, apr, pm.perYear, pm.totalPayments);
-    totalPaid = payment * pm.totalPayments;
-    totalInterest = Math.max(0, totalPaid - amountFinanced);
+    const rawPayment = calcPayment(amountFinanced, apr, pm.perYear, pm.totalPayments);
+    payment = round2(rawPayment); // Rounds the exact payment to the penny
+    totalPaid = round2(payment * pm.totalPayments);
+    totalInterest = Math.max(0, round2(totalPaid - amountFinanced));
     paymentLabelKey = pm.labelKey;
   }
+
+  const totalFeesDisplay = round2(safetyFeeBase);
 
   return {
     purchaseType,
@@ -852,7 +868,7 @@ function computeTotals({ useRust = null, useWarranty = null } = {}) {
     addonsItems: addons.items,
     addonsBeforeTax,
     addonsWithTax,
-    priceWithTax,
+    priceWithTax: baseWithTax, 
     tradeInEntered,
     tradeInWithTax,
     payoff,
