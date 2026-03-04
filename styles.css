@@ -1,1 +1,120 @@
+:root {
+  --bg-color: #090a0f;
+  --card-bg: rgba(20, 22, 30, 0.65);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-main: #fcfcfc;
+  --text-muted: #8e95a5;
+  --toyota-red: #eb0a1e;
+  --toyota-red-hover: #cc0919;
+  --toyota-red-glow: rgba(235, 10, 30, 0.2);
+  --input-bg: rgba(10, 12, 18, 0.8);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-heavy: 0 24px 50px rgba(0, 0, 0, 0.6);
+  --shadow-light: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-color);
+  background-image: 
+    radial-gradient(circle at 15% 0%, rgba(235, 10, 30, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.03) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1100px; margin: 40px auto; padding: 0 24px; }
+
+/* Header & Logo */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.brand { display: flex; align-items: center; gap: 16px; }
+.logoImg { height: 80px; width: auto; object-fit: contain; background: #ffffff; padding: 8px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-light); }
+h1 { font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+.badge { font-size: 12px; color: #fff; background: var(--toyota-red); padding: 6px 14px; border-radius: 999px; font-weight: 700; text-transform: uppercase; box-shadow: 0 4px 12px var(--toyota-red-glow); }
+
+/* Layout Grid & Sticky Panel */
+.grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
+@media (min-width: 1024px) { .grid { grid-template-columns: 1.3fr 0.9fr; } }
+
+.card { background: var(--card-bg); backdrop-filter: blur(24px); border: 1px solid var(--card-border); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-heavy); }
+.vehicleCard { margin-bottom: 24px; padding: 20px 28px; }
+
+/* Sticky Results Panel */
+.sticky { position: sticky; top: 24px; }
+
+/* Tabs Navigation */
+.tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--card-border); margin-bottom: 24px; padding-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn { background: transparent; color: var(--text-muted); border: none; padding: 10px 16px; font-weight: 600; font-size: 14px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); white-space: nowrap; box-shadow: none; }
+.tab-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.05); transform: none; }
+.tab-btn.active { color: #fff; background: var(--toyota-red); box-shadow: 0 4px 12px var(--toyota-red-glow); }
+
+/* Tab Content */
+.tab-content { display: none; animation: fadeIn 0.3s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Sections & Fields */
+.sectionTitle { display: flex; align-items: center; gap: 16px; margin: 24px 0 16px; }
+.sectionTitle h2 { font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; margin: 0; color: var(--text-muted); font-weight: 700; }
+.sectionLine { height: 1px; flex: 1; background: linear-gradient(90deg, var(--card-border), transparent); }
+
+.row { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+@media (min-width: 620px) { .row { grid-template-columns: 1fr 1fr; } }
+.row > * { min-width: 0; }
+
+label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 500; }
+input, select { width: 100%; box-sizing: border-box; padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); font-size: 15px; outline: none; transition: var(--transition); font-family: inherit; }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e95a5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+select option { background-color: var(--bg-color); color: var(--text-main); }
+input:focus, select:focus { border-color: var(--toyota-red); box-shadow: 0 0 0 4px var(--toyota-red-glow); transform: translateY(-1px); }
+.hint { font-size: 12px; color: #646b7a; margin-top: 6px; line-height: 1.4; }
+
+/* Vehicle Banner */
+.vehicleBanner { border: 1px solid rgba(235, 10, 30, 0.2); background: linear-gradient(135deg, rgba(235, 10, 30, 0.1), rgba(0, 0, 0, 0.2)); border-radius: var(--radius-md); padding: 16px 20px; display: flex; flex-direction: column; gap: 4px; }
+.vehicleBig { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+.vehicleSmall { font-size: 13px; color: var(--text-muted); }
+
+/* Buttons */
+.btnRow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+button { cursor: pointer; padding: 14px 20px; border-radius: var(--radius-md); border: none; background: var(--toyota-red); color: #fff; font-weight: 600; font-size: 14px; transition: var(--transition); box-shadow: 0 4px 12px var(--toyota-red-glow); }
+button:hover { background: var(--toyota-red-hover); transform: translateY(-2px); }
+button:active { transform: translateY(0); }
+.outline-btn { background: #1e222d; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.outline-btn:hover { background: #2a2f3e; }
+.remove-btn { background: transparent; color: var(--text-muted); padding: 14px; box-shadow: none; border: 1px solid var(--input-border); }
+.remove-btn:hover { background: rgba(235, 10, 30, 0.1); color: var(--toyota-red); border-color: var(--toyota-red); }
+
+/* Dynamic Add-ons */
+.dynamic-row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 12px; animation: fadeIn 0.2s ease; }
+.dynamic-row .field { flex: 1; margin-bottom: 0; }
+.dynamic-row .price-field { width: 140px; flex: none; }
+
+/* Results */
+.resultsHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.resultsHeader h2 { margin: 0; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-muted); }
+.big { font-size: 42px; font-weight: 900; letter-spacing: -1px; margin: 8px 0 4px; color: #ffffff; }
+.paymentLabel { font-size: 14px; color: var(--toyota-red); font-weight: 600; margin-bottom: 24px; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--input-border); font-size: 13px; }
+.list li:first-child { border-top: 0; }
+.k { color: var(--text-muted); }
+.v { color: var(--text-main); font-weight: 600; font-variant-numeric: tabular-nums; }
+.warn { margin-top: 24px; padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.02); color: var(--text-muted); font-size: 11px; line-height: 1.5; }
+
+/* Language */
+.langField { position: absolute; top: 24px; right: 24px; z-index: 1000; }
+.langField label { display: none; }
+.langField select { padding: 8px 32px 8px 16px; font-size: 13px; font-weight: 600; border-radius: 999px; background-color: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(10px); }
+
+/* PRINT STYLES - Kept untouched to ensure perfection */
+
+#printArea { display: none; }
 
